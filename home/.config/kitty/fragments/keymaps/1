@@ -1,0 +1,14 @@
+# Workspace mode: sticky while you reshape the current split tree.
+action_alias vsplit_cwd launch --location=vsplit --cwd=current
+action_alias hsplit_cwd launch --location=hsplit --cwd=current
+
+map --new-mode mode_layout --timeout 30.0 --on-unknown ignore ctrl+space>w
+map --mode mode_layout shift+/ show_keymap_help
+map --mode mode_layout v vsplit_cwd
+map --mode mode_layout s hsplit_cwd
+map --mode mode_layout b layout_action bias 70
+map --mode mode_layout m layout_action maximize horizontal
+map --mode mode_layout r layout_action rotate
+map --mode mode_layout e layout_action reset_window_sizes
+map --mode mode_layout esc pop_keyboard_mode
+

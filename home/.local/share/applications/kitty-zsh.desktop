@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=kitty-work
+GenericName=Terminal emulator
+Comment=Launch kitty into the work session
+TryExec=/home/_404/.local/bin/kitty
+StartupNotify=true
+Exec=/home/_404/.local/bin/kitty --start-as=maximized --session /home/_404/.config/kitty/sessions/work.session
+Icon=kitty
+Categories=System;TerminalEmulator;
+X-TerminalArgExec=--
+X-TerminalArgTitle=--title
+X-TerminalArgAppId=--class
+X-TerminalArgDir=--working-directory
+X-TerminalArgHold=--hold

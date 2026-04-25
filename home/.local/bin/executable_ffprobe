@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec "$HOME/.local/opt/ffmpeg/bin/ffprobe" "$@"

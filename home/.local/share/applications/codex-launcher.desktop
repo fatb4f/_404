@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Codex Launcher
+GenericName=AI Coding Assistant
+Comment=Compatibility desktop ID for Codex launcher
+TryExec=/home/_404/.local/bin/codex-vscode
+Exec=/home/_404/.local/bin/app2unit-interactive-tui -- /home/_404/.local/bin/codex-vscode %U
+Icon=utilities-terminal
+Categories=Development;
+StartupNotify=false
+NoDisplay=true

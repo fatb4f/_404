@@ -1,0 +1,18 @@
+{
+  "artifacts": [
+    "bat-v0.26.1-x86_64-unknown-linux-gnu.tar.gz",
+    "eza_x86_64-unknown-linux-gnu.tar.gz",
+    "ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz",
+    "fd-v10.4.2-x86_64-unknown-linux-gnu.tar.gz",
+    "yazi-x86_64-unknown-linux-gnu.zip",
+    "kitty-0.46.2-x86_64.txz",
+    "fzf-0.71.0-linux_amd64.tar.gz",
+    "tinty-x86_64-unknown-linux-gnu.tar.gz",
+    "uv-x86_64-unknown-linux-gnu.tar.gz",
+    "nvim-linux-x86_64.tar.gz",
+    "bun-linux-x64.zip",
+    "jq",
+    "codex-zsh",
+    "node-v25.9.0-linux-x64.tar.xz"
+  ]
+}

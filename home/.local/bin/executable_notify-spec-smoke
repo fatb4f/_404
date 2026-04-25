@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+interactive=0
+if [[ "${1:-}" == "--interactive" ]]; then
+  interactive=1
+fi
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "missing dependency: $1" >&2
+    exit 127
+  }
+}
+
+need gdbus
+need notify-send
+
+pass=0
+fail=0
+
+ok() { echo "PASS: $*"; pass=$((pass + 1)); }
+bad() { echo "FAIL: $*"; fail=$((fail + 1)); }
+
+server_info="$(gdbus call --session \
+  --dest org.freedesktop.Notifications \
+  --object-path /org/freedesktop/Notifications \
+  --method org.freedesktop.Notifications.GetServerInformation 2>/dev/null || true)"
+if [[ -n "$server_info" ]]; then ok "GetServerInformation"; else bad "GetServerInformation"; fi
+
+caps="$(gdbus call --session \
+  --dest org.freedesktop.Notifications \
+  --object-path /org/freedesktop/Notifications \
+  --method org.freedesktop.Notifications.GetCapabilities 2>/dev/null || true)"
+if [[ -n "$caps" ]]; then ok "GetCapabilities"; else bad "GetCapabilities"; fi
+
+id1="$(notify-send -p -a notify-spec-smoke -t 5000 "spec smoke basic" "body" 2>/dev/null || true)"
+if [[ "$id1" =~ ^[0-9]+$ ]]; then ok "Notify returns id ($id1)"; else bad "Notify returns id"; fi
+
+id2="$(notify-send -p -a notify-spec-smoke -r "${id1:-0}" -t 5000 "spec smoke replace" "body2" 2>/dev/null || true)"
+if [[ "$id1" =~ ^[0-9]+$ && "$id2" == "$id1" ]]; then ok "replace-id reused same id ($id2)"; else bad "replace-id behavior"; fi
+
+id3="$(notify-send -p -a notify-spec-smoke -u critical -h byte:urgency:2 -t 4000 "spec smoke urgency" "critical" 2>/dev/null || true)"
+if [[ "$id3" =~ ^[0-9]+$ ]]; then ok "urgency/hint accepted ($id3)"; else bad "urgency/hint accepted"; fi
+
+if (( interactive )); then
+  echo "Interactive check: click the action button on the next notification."
+  action_out="$(timeout 10s notify-send -w -A default=Open -a notify-spec-smoke "spec smoke action" "click action now" 2>/dev/null || true)"
+  if [[ -n "$action_out" ]]; then
+    ok "ActionInvoked path returned action: $action_out"
+  else
+    bad "ActionInvoked path (no action captured)"
+  fi
+fi
+
+echo "Summary: pass=$pass fail=$fail"
+if (( fail > 0 )); then
+  exit 1
+fi

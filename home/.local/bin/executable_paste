@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+find_kitty_socket() {
+  if [[ -n ${KITTY_LISTEN_ON-} ]]; then
+    printf '%s\n' "${KITTY_LISTEN_ON#unix:}"
+    return 0
+  fi
+
+  if [[ -S /tmp/kitty ]]; then
+    printf '%s\n' /tmp/kitty
+    return 0
+  fi
+
+  local socket
+  while IFS= read -r socket; do
+    printf '%s\n' "$socket"
+    return 0
+  done < <(find /tmp -maxdepth 1 -type s -name 'kitty-*' -printf '%T@ %p\n' 2>/dev/null | sort -nr | awk 'NR==1 { print $2 }')
+
+  return 1
+}
+
+if command -v kitty >/dev/null 2>&1; then
+  if kitty_socket="$(find_kitty_socket)"; then
+    kitty_match_args=()
+    if [[ -n ${KITTY_WINDOW_ID-} ]]; then
+      kitty_match_args=(--match "id:${KITTY_WINDOW_ID}")
+    fi
+
+    if kitty @ --to "unix:$kitty_socket" kitten "${kitty_match_args[@]}" clipboard --get-clipboard; then
+      exit 0
+    fi
+  elif [[ -n ${KITTY_WINDOW_ID-} ]]; then
+    if kitty +kitten clipboard --get-clipboard; then
+      exit 0
+    fi
+  fi
+fi
+
+if [[ -r /dev/clipboard ]]; then
+  cat /dev/clipboard
+  exit 0
+fi
+
+exit 1

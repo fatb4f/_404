@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+kitty_conf_dir="${KITTY_CONFIG_DIRECTORY:-$HOME/.config/kitty}"
+kitty_binds="${KITTY_BINDS:-$kitty_conf_dir/binds.txt}"
+
+if [[ -r "$kitty_binds" ]]; then
+  exec cat "$kitty_binds"
+fi
+
+rg -n '^\s*(map|mouse_map|action_alias|kitten_alias)\b' \
+  "$kitty_conf_dir"/fragments/**/*.conf \
+  2>/dev/null |
+  sort -t: -k1,1 -k2,2n

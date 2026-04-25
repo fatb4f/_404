@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+host="${GH_HOST:-github.com}"
+token_file="${GH_TOKEN_FILE:-$config_home/gh/token}"
+
+if gh auth status -h "$host" >/dev/null 2>&1; then
+  exit 0
+fi
+
+if [[ ! -r "$token_file" ]]; then
+  printf 'gh-auth-refresh: missing token file: %s\n' "$token_file" >&2
+  printf 'Expected a chezmoi-managed secret at %s\n' "$token_file" >&2
+  exit 1
+fi
+
+token="$(tr -d '\r\n' < "$token_file")"
+if [[ -z "$token" ]]; then
+  printf 'gh-auth-refresh: empty token file: %s\n' "$token_file" >&2
+  exit 1
+fi
+
+mkdir -p "$config_home/gh"
+rm -f "$config_home/gh/hosts.yml"
+printf '%s' "$token" \
+  | gh auth login -h "$host" --git-protocol https --with-token --insecure-storage >/dev/null

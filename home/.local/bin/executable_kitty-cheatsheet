@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+kitty_daily_use="${KITTY_DAILY_USE:-$HOME/src/knowledge/10-areas/workbench/kitty/kitty-daily-use.md}"
+kitty_keybinds="${KITTY_KEYBINDS:-$HOME/src/knowledge/10-areas/workbench/kitty/kitty-keybinds.md}"
+
+if [[ ${KITTY_LISTEN_ON-} ]]; then
+  if [[ -r "$kitty_daily_use" ]]; then
+    exec kitty @ launch --type=tab --tab-title "kitty daily use" --cwd=current sh -lc "less -R '$kitty_daily_use'"
+  fi
+
+  if [[ -r "$kitty_keybinds" ]]; then
+    exec kitty @ launch --type=tab --tab-title "kitty keybinds" --cwd=current sh -lc "less -R '$kitty_keybinds'"
+  fi
+fi
+
+if [[ -r "$kitty_daily_use" ]]; then
+  exec less -R "$kitty_daily_use"
+fi
+
+exec kitty-keybinds

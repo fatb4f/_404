@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SESSION_FILE="${KITTY_DEV_SESSION:-$HOME/.config/kitty/sessions/dev-tall.conf}"
+PRJROOT="${PRJROOT:-$HOME/.local/share/src}"
+SOCKET_PATH="${KITTY_SOCKET_PATH:-/tmp/kitty-${USER}.sock}"
+
+mkdir -p "$PRJROOT"
+
+# If invoked inside kitty, compose in the same OS window.
+# If remote control is disabled, fail with guidance instead of opening a new window.
+if [[ -n "${KITTY_WINDOW_ID:-}" ]] && command -v kitten >/dev/null 2>&1; then
+  if ! kitten @ ls >/dev/null 2>&1; then
+    echo "kitty-dev: current kitty window does not allow remote control." >&2
+    echo "Relaunch kitty after applying config (allow_remote_control yes), then retry." >&2
+    echo "Optional test: kitten @ ls" >&2
+    exit 1
+  fi
+
+  # Dev tab: yazi + shell split in current kitty OS window.
+  kitten @ launch --type=tab --tab-title Dev --cwd "$PRJROOT" yazi >/dev/null
+  kitten @ launch --location=vsplit --cwd "$PRJROOT" fish >/dev/null
+  exit 0
+fi
+
+# Fallback: open a new kitty window with the session file.
+if [[ ! -f "$SESSION_FILE" ]]; then
+  echo "Missing kitty session file: $SESSION_FILE" >&2
+  exit 1
+fi
+
+exec kitty -o allow_remote_control=yes --listen-on "unix:${SOCKET_PATH}" --session "$SESSION_FILE"

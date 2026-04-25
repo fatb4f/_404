@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PORT="${CODEX_ACP_PORT:-3021}"
+
+if ! command -v npx >/dev/null 2>&1; then
+  echo "npx not found in PATH" >&2
+  exit 127
+fi
+
+exec npx -y stdio-to-ws "npx -y @zed-industries/codex-acp" --port "$PORT"

@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+XDG_STATE_HOME="${XDG_STATE_HOME:-/home/_404/.local/state}"
+CODEX_STATE="${CODEX_STATE:-/home/_404/.local/state/codex}"
+META_DIR="$CODEX_STATE/meta"
+SESSIONS_ROOT="${CODEX_SESSIONS_ROOT:-/home/_404/.config/codex/sessions}"
+SNIPPET_FILE="$META_DIR/generated_prompt_context.txt"
+PROMPT_OUT="$META_DIR/effective_prompt.txt"
+PROMPT_SRC="/home/_404/src/codex_home/prompt.txt"
+GENERATOR="/home/_404/src/spawn/tools/codex/generate_context.py"
+REFRESH_LOG="$META_DIR/refresh.log"
+LOADER_INPUT="$META_DIR/session_context_loader_input.json"
+SPAWNCTL_BIN="${SPAWNCTL_BIN:-/home/_404/.local/bin/spawnctl}"
+WAIT_FOR_SESSION_WRITE=0
+WAIT_TIMEOUT_SECONDS="${CODEX_REFRESH_WAIT_TIMEOUT_SECONDS:-30}"
+PRJROOT="${PRJROOT:-/home/_404/.local/share/src}"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --wait-session-write)
+      WAIT_FOR_SESSION_WRITE=1
+      shift
+      ;;
+    --wait-timeout-seconds)
+      WAIT_TIMEOUT_SECONDS="${2:-30}"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+latest_session_mtime() {
+  local latest=""
+  local mtime=""
+  latest="$(find "$SESSIONS_ROOT" -type f -name '*.jsonl' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | awk '{print $2}')"
+  if [[ -n "$latest" && -f "$latest" ]]; then
+    mtime="$(stat -c '%Y' "$latest" 2>/dev/null || true)"
+    printf '%s\n' "$mtime"
+    return 0
+  fi
+  printf '%s\n' ""
+}
+
+mkdir -p "$META_DIR"
+
+before_mtime=""
+if [[ "$WAIT_FOR_SESSION_WRITE" -eq 1 ]]; then
+  before_mtime="$(latest_session_mtime)"
+fi
+
+GENERATOR_ARGS=(
+  --prjroot "$PRJROOT"
+  --sessions-root "$SESSIONS_ROOT"
+  --output "$SNIPPET_FILE"
+)
+if [[ "$WAIT_FOR_SESSION_WRITE" -eq 0 || ! -f "$LOADER_INPUT" ]]; then
+  GENERATOR_ARGS=(--loader-input-output "$LOADER_INPUT" "${GENERATOR_ARGS[@]}")
+fi
+
+if command -v python >/dev/null 2>&1 && [[ -f "$GENERATOR" ]]; then
+  if ! python "$GENERATOR" "${GENERATOR_ARGS[@]}" >>"$REFRESH_LOG" 2>&1; then
+    printf '[%s] WARN: context generator failed\n' "$(date -Iseconds)" >>"$REFRESH_LOG"
+  fi
+fi
+
+if [[ "$WAIT_FOR_SESSION_WRITE" -eq 1 && -n "$before_mtime" ]]; then
+  wait_steps="$(python - "$WAIT_TIMEOUT_SECONDS" <<'PY'
+import math, sys
+timeout = float(sys.argv[1])
+print(max(1, math.ceil(timeout / 0.2)))
+PY
+)"
+  for _ in $(seq 1 "$wait_steps"); do
+    now_mtime="$(latest_session_mtime)"
+    if [[ -n "$now_mtime" && "$now_mtime" -gt "$before_mtime" ]]; then
+      break
+    fi
+    sleep 0.2
+  done
+
+  if command -v python >/dev/null 2>&1 && [[ -f "$GENERATOR" ]]; then
+    if ! python "$GENERATOR" \
+      --prjroot "$PRJROOT" \
+      --sessions-root "$SESSIONS_ROOT" \
+      --output "$SNIPPET_FILE" \
+      >>"$REFRESH_LOG" 2>&1; then
+      printf '[%s] WARN: context generator failed after wait\n' "$(date -Iseconds)" >>"$REFRESH_LOG"
+    fi
+  fi
+fi
+
+tmp_prompt="$PROMPT_OUT.tmp.$$"
+{
+  if [[ -f "$SNIPPET_FILE" ]]; then
+    cat "$SNIPPET_FILE"
+  else
+    echo "Meta context (local, generated): unavailable"
+  fi
+  echo
+  if [[ -f "$PROMPT_SRC" ]]; then
+    cat "$PROMPT_SRC"
+  else
+    echo "Default prompt source missing: $PROMPT_SRC"
+  fi
+} > "$tmp_prompt"
+
+mv -f "$tmp_prompt" "$PROMPT_OUT"
+
+if [[ "$WAIT_FOR_SESSION_WRITE" -eq 1 ]]; then
+  if [[ -x "$SPAWNCTL_BIN" ]]; then
+    if ! "$SPAWNCTL_BIN" codex-session load-fresh-session --loader-input "$LOADER_INPUT" >>"$REFRESH_LOG" 2>&1; then
+      printf '[%s] WARN: fresh-session loader report failed\n' "$(date -Iseconds)" >>"$REFRESH_LOG"
+    fi
+  else
+    printf '[%s] WARN: spawnctl not executable at %s\n' "$(date -Iseconds)" "$SPAWNCTL_BIN" >>"$REFRESH_LOG"
+  fi
+fi
+
+echo "$PROMPT_OUT"

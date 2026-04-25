@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export APP2UNIT_LAUNCH_CLASS="background"
+export APP2UNIT_SLICE_KEY="b"
+if [[ -n "${APP2UNIT_XDG_CONFIG_DIRS:-}" ]]; then
+  export XDG_CONFIG_DIRS="${APP2UNIT_XDG_CONFIG_DIRS}"
+fi
+if [[ -n "${APP2UNIT_XDG_DATA_DIRS:-}" ]]; then
+  export XDG_DATA_DIRS="${APP2UNIT_XDG_DATA_DIRS}"
+fi
+
+APP2UNIT_BIN="${APP2UNIT_BIN:-/usr/bin/app2unit}"
+if [[ ! -x "$APP2UNIT_BIN" ]]; then
+  APP2UNIT_BIN="$(command -v app2unit)"
+fi
+
+exec "$APP2UNIT_BIN" -x "$@"

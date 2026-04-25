@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+session_dir="${KITTY_SESSION_DIR:-$config_home/kitty/sessions}"
+launcher="${KITTY_LAUNCHER:-kitty}"
+
+launch_kitty() {
+  if [[ "$launcher" == "kitty" ]]; then
+    kitty --detach "$@" >/dev/null 2>&1 &
+    exit 0
+  fi
+  "$launcher" -a kitty -- kitty --detach "$@" >/dev/null 2>&1 &
+  exit 0
+}
+
+default_session() {
+  local preferred
+  for preferred in \
+    "$session_dir/codex.session" \
+    "$session_dir/work.session"
+  do
+    if [[ -f "$preferred" ]]; then
+      printf '%s\n' "$preferred"
+      return 0
+    fi
+  done
+  printf '%s\n' "${session_files[0]}"
+}
+
+if [[ $# -gt 0 ]]; then
+  launch_kitty "$@"
+fi
+
+if [[ ! -d "$session_dir" ]]; then
+  launch_kitty
+fi
+
+mapfile -t session_files < <(
+  find "$session_dir" -maxdepth 1 -type f \
+    \( -name '*.session' -o -name '*.kitty_session' -o -name '*.conf' \) \
+    | sort
+)
+
+if [[ ${#session_files[@]} -eq 0 ]]; then
+  launch_kitty
+fi
+
+if [[ ! -t 0 || ! -t 1 || ! -t 2 ]]; then
+  launch_kitty --session "$(default_session)"
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+  launch_kitty --session "$(default_session)"
+fi
+
+declare -A label_counts=()
+for file in "${session_files[@]}"; do
+  base="$(basename "$file")"
+  label="${base%.kitty_session}"
+  label="${label%.session}"
+  label="${label%.conf}"
+  ((label_counts["$label"] += 1))
+done
+
+selection="$(
+  for file in "${session_files[@]}"; do
+    base="$(basename "$file")"
+    label="${base%.kitty_session}"
+    label="${label%.session}"
+    label="${label%.conf}"
+    if (( label_counts["$label"] > 1 )); then
+      label="$base"
+    fi
+    printf '%s\t%s\n' "$label" "$file"
+  done \
+    | fzf --with-nth=1 --delimiter=$'\t' --prompt='kitty session> ' \
+    | cut -f2
+)"
+
+[[ -n "${selection:-}" ]] || exit 0
+launch_kitty --session "$selection"

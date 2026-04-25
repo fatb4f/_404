@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+target=${1:-}
+template="$HOME/.local/share/workbench/bash/templates/script.sh"
+
+if [[ -z $target ]]; then
+  printf 'usage: %s <path>\n' "${0##*/}" >&2
+  exit 2
+fi
+
+if [[ ! -f "$template" ]]; then
+  printf 'missing template: %s\n' "$template" >&2
+  exit 1
+fi
+
+mkdir -p "$(dirname "$target")"
+cp "$template" "$target"
+chmod +x "$target"
