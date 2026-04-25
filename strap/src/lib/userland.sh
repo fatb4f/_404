@@ -67,7 +67,10 @@ find_one_artifact() {
 }
 
 find_bin_in_tree() {
-  local tree=${1:?tree} bin=${2:?bin} found
+  local tree=${1:?tree} bin=${2:?bin} count found
+
+  count="$(find "$tree" \( -type f -o -type l \) -name "$bin" 2>/dev/null | wc -l | tr -d ' ')"
+  [[ "$count" == 1 ]] || die "expected exactly one binary named $bin in $tree, found $count"
 
   found="$(find "$tree" \( -type f -o -type l \) -name "$bin" 2>/dev/null | head -n 1 || true)"
   [[ -n "$found" ]] || die "binary not found after extract: $bin in $tree"
@@ -143,13 +146,13 @@ install_opt_tree_and_links() {
 }
 
 write_userland_receipt() {
-  local receipt=${1:?receipt} name=${2:?name} repo=${3:?repo} pkg=${4:?pkg} artifact=${5:?artifact} strategy=${6:?strategy} bins=${7:?bins}
+  local receipt=${1:?receipt} name=${2:?name} repo=${3:?repo} pkg=${4:?pkg} artifact=${5:?artifact} strategy=${6:?strategy} bins=${7:?bins} status=${8:?status}
   ensure_dir "$(dirname -- "$receipt")"
   if [[ "${DRY_RUN:-0}" == 1 ]]; then
-    printf '[dry-run] append receipt %q for %s %s %s\n' "$receipt" "$name" "$pkg" "$artifact"
+    printf '[dry-run] append receipt %q for %s %s %s (%s)\n' "$receipt" "$name" "$pkg" "$artifact" "$status"
     return 0
   fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$repo" "$pkg" "$artifact" "$strategy" "$bins" >>"$receipt"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$repo" "$pkg" "$artifact" "$strategy" "$bins" "$status" >>"$receipt"
 }
 
 install_userland_tools() {
@@ -160,6 +163,7 @@ install_userland_tools() {
   local opt_root=${_404_LOCAL_OPT:-$HOME/.local/opt}
   local cache_root=${_404_ARTIFACT_CACHE:-$cache_home/_404/artifacts}
   local receipt=${_404_USERLAND_RECEIPT:-$state_home/_404/userland-installed.tsv}
+  local receipt_tmp=
 
   if [[ "${DRY_RUN:-0}" != 1 ]]; then
     require_cmd gh jq tar unzip find head install cp ln chmod || die 'missing required userland installer command'
@@ -169,9 +173,10 @@ install_userland_tools() {
   ensure_dir "$opt_root"
   ensure_dir "$cache_root"
   ensure_dir "$(dirname -- "$receipt")"
-
-  if [[ "${DRY_RUN:-0}" != 1 ]]; then
-    : >"$receipt"
+  if [[ "${DRY_RUN:-0}" == 1 ]]; then
+    receipt_tmp="${receipt}.dryrun.$$"
+  else
+    receipt_tmp="$(mktemp "${receipt}.XXXXXX")"
   fi
 
   local rows=()
@@ -188,6 +193,7 @@ install_userland_tools() {
     first_bin=${bins_csv%%,*}
     if [[ -e "$bin_dir/$first_bin" && "${FORCE:-0}" != 1 ]]; then
       info "userland present: $name -> $bin_dir/$first_bin"
+      write_userland_receipt "$receipt_tmp" "$name" "$repo" "$pkg" "-" "$strategy" "$bins_csv" "present"
       continue
     fi
 
@@ -235,9 +241,15 @@ install_userland_tools() {
         ;;
     esac
 
-    write_userland_receipt "$receipt" "$name" "$repo" "$pkg" "${artifact##*/}" "$strategy" "$bins_csv"
+    write_userland_receipt "$receipt_tmp" "$name" "$repo" "$pkg" "${artifact##*/}" "$strategy" "$bins_csv" "installed"
     rm -rf -- "$tmp"
 
     info "installed userland artifact: $name"
   done
+
+  if [[ "${DRY_RUN:-0}" != 1 ]]; then
+    mv -f -- "$receipt_tmp" "$receipt"
+  else
+    rm -f -- "$receipt_tmp"
+  fi
 }

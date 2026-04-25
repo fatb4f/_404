@@ -41,7 +41,7 @@ acquire repo
       -> install userland release tools
       -> activate direct-HOME dotfiles
       -> run post-dotfiles package setup
-      -> chsh after dotfiles are live
+      -> optional chsh after dotfiles are live
       -> doctor
 ```
 

@@ -10,7 +10,7 @@ host-bootstrap
   -> GitHub-release userland tools
   -> direct-HOME dotfiles
   -> post-dotfiles package setup
-  -> chsh after dotfiles are live
+  -> optional chsh after dotfiles are live
 ```
 
 The dotfile authority should track `$HOME` directly with `yadm` or a bare Git repo.
@@ -37,7 +37,7 @@ arch-base   -> sudo -n pacman -Syu --needed --noconfirm
 debian-base -> sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y
 ```
 
-`chsh` runs only after dotfiles are live. If it cannot run non-interactively, it prints the manual command and continues with a warning.
+`chsh` runs only after dotfiles are live, and it is not part of the default stage list. If it cannot run non-interactively, it prints the manual command and continues with a warning.
 
 Before install, each base-package entry is smoke-tested against the package manager to make sure it resolves in the current distro metadata. If a package does not resolve, bootstrap fails closed before the install step.
 
@@ -134,6 +134,8 @@ Default locations:
 $XDG_CACHE_HOME/_404/artifacts       release download cache
 $XDG_STATE_HOME/_404/userland-installed.tsv
 ```
+
+The receipt TSV records: `name`, `repo`, `pkg`, `artifact`, `strategy`, `bins`, `status`.
 
 Install modes:
 

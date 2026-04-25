@@ -35,7 +35,7 @@ usage: strap/bootstrap [options]
 Options:
   --dry-run                 Print actions without applying changes.
   --host CLASS              Override detected host class: arch-base|debian-base.
-  --stages CSV              Run selected stages. Default: env,pkgs,userland,dotfiles,post,chsh,doctor.
+  --stages CSV              Run selected stages. Default: env,pkgs,userland,dotfiles,post,doctor.
                             Available: detect,env,pkgs,userland,dotfiles,post,chsh,doctor.
   --dotfiles-repo URL       yadm remote to clone when no yadm repo exists.
   --import-home-tree        Import ./home as a direct $HOME overlay before yadm activation.
@@ -53,7 +53,7 @@ DRY_RUN=${DRY_RUN:-0}
 FORCE=${FORCE:-0}
 IMPORT_HOME_TREE=${IMPORT_HOME_TREE:-0}
 HOST_CLASS=${HOST_CLASS:-}
-STAGES=${STAGES:-env,pkgs,userland,dotfiles,post,chsh,doctor}
+STAGES=${STAGES:-env,pkgs,userland,dotfiles,post,doctor}
 
 while (($#)); do
   case "$1" in
@@ -112,6 +112,18 @@ stage_enabled() {
     *) return 1 ;;
   esac
 }
+
+validate_stages() {
+  local IFS=',' stage
+  for stage in $STAGES; do
+    case "$stage" in
+      detect|env|pkgs|userland|dotfiles|post|chsh|doctor) ;;
+      *) die "unknown stage: $stage" ;;
+    esac
+  done
+}
+
+validate_stages
 
 info "project_root=$PROJECT_ROOT"
 info "host_class=$HOST_CLASS"
