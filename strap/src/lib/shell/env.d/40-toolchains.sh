@@ -18,5 +18,14 @@ if [[ -f "$HOME/.cargo/env" ]]; then
   . "$HOME/.cargo/env"
 fi
 
-export CC="$HOME/.local/bin/gcc"
-export CXX="$HOME/.local/bin/g++"
+if command -v gcc >/dev/null 2>&1; then
+  export CC="$(command -v gcc)"
+else
+  unset CC
+fi
+
+if command -v g++ >/dev/null 2>&1; then
+  export CXX="$(command -v g++)"
+else
+  unset CXX
+fi
