@@ -120,10 +120,8 @@ if command -v gh >/dev/null 2>&1; then
   _comps[gh]=_gh
 fi
 
-if command -v chezmoi >/dev/null 2>&1; then
-  eval "$(chezmoi completion zsh 2>/dev/null | sed '/^compdef /d')" || true
-  typeset -gA _comps
-  _comps[chezmoi]=_chezmoi
+if command -v yadm >/dev/null 2>&1; then
+  alias dots=yadm
 fi
 
 if command -v zoxide >/dev/null 2>&1; then

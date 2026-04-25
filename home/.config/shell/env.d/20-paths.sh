@@ -5,6 +5,7 @@ path_prepend() {
   esac
 }
 
+path_prepend "${_404_TOOL_PATH:-${XDG_DATA_HOME:-$HOME/.local/share}/_404/path}"
 path_prepend "$HOME/.local/bin"
 
 export PATH
