@@ -14,7 +14,7 @@ doctor() {
   printf 'local_bin=%s\n' "$local_bin"
 
   local cmd
-  for cmd in bash git curl jq gh npm yadm zsh chsh; do
+  for cmd in bash git curl jq gh npm bun ya yadm zsh chsh; do
     if command -v "$cmd" >/dev/null 2>&1; then
       printf 'ok command %s -> %s\n' "$cmd" "$(command -v "$cmd")"
     else
@@ -51,8 +51,22 @@ doctor() {
     printf 'warn zsh dotfiles missing from home overlay\n'
   fi
 
+  if [[ -r "$project_root/home/.config/nvim/init.lua" ]]; then
+    printf 'ok nvim config exists in home overlay\n'
+  else
+    printf 'warn nvim config missing from home overlay\n'
+  fi
+
+  if command -v bun >/dev/null 2>&1; then
+    printf 'ok bun available for javascript lsp tooling\n'
+  fi
+
   if command -v yadm >/dev/null 2>&1; then
-    yadm status --short || true
+    if [[ -d "${YADM_REPO:-${XDG_DATA_HOME:-$HOME/.local/share}/yadm/repo.git}" ]]; then
+      yadm status --short || true
+    else
+      printf 'yadm_repo=missing\n'
+    fi
   fi
 
   if ((failures > 0)); then

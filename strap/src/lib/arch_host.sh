@@ -18,6 +18,12 @@ install_arch_packages() {
 
   ((${#packages[@]})) || return 0
 
+  if [[ "${DRY_RUN:-0}" == 1 ]]; then
+    printf '[dry-run] sudo -n pacman -Sy\n'
+  else
+    sudo -n pacman -Sy
+  fi
+
   local resolved=()
   for pkg in "${packages[@]}"; do
     if ! pacman -Si "$pkg" >/dev/null 2>&1; then

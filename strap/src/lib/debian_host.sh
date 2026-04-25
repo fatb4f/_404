@@ -18,6 +18,12 @@ install_debian_packages() {
 
   ((${#packages[@]})) || return 0
 
+  if [[ "${DRY_RUN:-0}" == 1 ]]; then
+    printf '[dry-run] sudo -n apt-get update\n'
+  else
+    sudo -n apt-get update
+  fi
+
   local resolved=()
   for pkg in "${packages[@]}"; do
     if ! apt-cache show "$pkg" >/dev/null 2>&1; then
@@ -27,7 +33,6 @@ install_debian_packages() {
   done
 
   if [[ "${DRY_RUN:-0}" == 1 ]]; then
-    printf '[dry-run] sudo -n apt-get update\n'
     printf '[dry-run] sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y'
     printf ' %q' "${resolved[@]}"
     printf '\n'
@@ -38,6 +43,5 @@ install_debian_packages() {
     die 'apt-get not found for debian-base'
   fi
 
-  sudo -n apt-get update
   sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y "${resolved[@]}"
 }

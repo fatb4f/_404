@@ -2,7 +2,7 @@ package strap
 
 #HostClass: "arch-base" | "debian-base"
 
-#BootstrapStage: "detect" | "env" | "pkgs" | "userland" | "dotfiles" | "chsh" | "doctor"
+#BootstrapStage: "detect" | "env" | "pkgs" | "userland" | "dotfiles" | "post" | "chsh" | "doctor"
 
 #HostBootstrap: {
   host: #HostClass
