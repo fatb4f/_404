@@ -9,6 +9,7 @@ host-bootstrap
   -> arch-base/debian-base package deps
   -> GitHub-release userland tools
   -> direct-HOME dotfiles
+  -> post-dotfiles package setup
   -> chsh after dotfiles are live
 ```
 
@@ -76,13 +77,13 @@ Activate yadm dotfiles, then attempt non-interactive `chsh`:
 
 ```bash
 DOTFILES_REPO_URL='git@github.com:USER/dotfiles.git' \
-  strap/bootstrap --stages dotfiles,chsh,doctor
+  strap/bootstrap --stages dotfiles,post,chsh,doctor
 ```
 
 Import the repository `home/` overlay into `$HOME` before yadm activation:
 
 ```bash
-strap/bootstrap --import-home-tree --stages dotfiles,chsh,doctor
+strap/bootstrap --import-home-tree --stages dotfiles,post,chsh,doctor
 ```
 
 ## Package-manager deps
@@ -90,6 +91,7 @@ strap/bootstrap --import-home-tree --stages dotfiles,chsh,doctor
 `jq`, `gh`, and `npm` are package-manager dependencies, not userland release artifacts.
 There is no shared `common.pkgs` layer; package names are adapter-specific.
 `base-devel` is the shared build-tool intent; on Arch it resolves to `base-devel`, and on Debian it resolves through `build-essential`.
+`ya pkg install` runs in the post-dotfiles stage so tracked Yazi package manifests can hydrate after dotfiles activation.
 
 Concrete package lists:
 

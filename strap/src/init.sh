@@ -23,6 +23,8 @@ USERLAND_MANIFEST="$PKG_DIR/artifacts.json"
 . "$LIB_DIR/userland.sh"
 # shellcheck source=strap/src/lib/dotfiles.sh
 . "$LIB_DIR/dotfiles.sh"
+# shellcheck source=strap/src/lib/post.sh
+. "$LIB_DIR/post.sh"
 # shellcheck source=strap/src/lib/doctor.sh
 . "$LIB_DIR/doctor.sh"
 
@@ -33,8 +35,8 @@ usage: strap/bootstrap [options]
 Options:
   --dry-run                 Print actions without applying changes.
   --host CLASS              Override detected host class: arch-base|debian-base.
-  --stages CSV              Run selected stages. Default: env,pkgs,userland,dotfiles,chsh,doctor.
-                            Available: detect,env,pkgs,userland,dotfiles,chsh,doctor.
+  --stages CSV              Run selected stages. Default: env,pkgs,userland,dotfiles,post,chsh,doctor.
+                            Available: detect,env,pkgs,userland,dotfiles,post,chsh,doctor.
   --dotfiles-repo URL       yadm remote to clone when no yadm repo exists.
   --import-home-tree        Import ./home as a direct $HOME overlay before yadm activation.
   --force                   Reinstall userland tools even if links already exist.
@@ -51,7 +53,7 @@ DRY_RUN=${DRY_RUN:-0}
 FORCE=${FORCE:-0}
 IMPORT_HOME_TREE=${IMPORT_HOME_TREE:-0}
 HOST_CLASS=${HOST_CLASS:-}
-STAGES=${STAGES:-env,pkgs,userland,dotfiles,chsh,doctor}
+STAGES=${STAGES:-env,pkgs,userland,dotfiles,post,chsh,doctor}
 
 while (($#)); do
   case "$1" in
@@ -134,6 +136,10 @@ fi
 
 if stage_enabled dotfiles; then
   activate_dotfiles "$PROJECT_ROOT"
+fi
+
+if stage_enabled post; then
+  post_dotfiles "$PROJECT_ROOT"
 fi
 
 if stage_enabled chsh; then

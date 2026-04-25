@@ -40,6 +40,7 @@ acquire repo
       -> install system packages/deps
       -> install userland release tools
       -> activate direct-HOME dotfiles
+      -> run post-dotfiles package setup
       -> chsh after dotfiles are live
       -> doctor
 ```
@@ -74,13 +75,13 @@ Activate dotfiles with yadm:
 
 ```bash
 DOTFILES_REPO_URL='git@github.com:USER/dotfiles.git' \
-  strap/bootstrap --stages dotfiles,doctor
+  strap/bootstrap --stages dotfiles,post,doctor
 ```
 
 Seed this repository's `home/` overlay into `$HOME` before yadm activation:
 
 ```bash
-strap/bootstrap --import-home-tree --stages dotfiles,doctor
+strap/bootstrap --import-home-tree --stages dotfiles,post,doctor
 ```
 
 ## Direct-HOME migration status
