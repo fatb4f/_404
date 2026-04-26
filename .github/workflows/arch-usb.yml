@@ -24,9 +24,9 @@ jobs:
 
       - name: Build arch USB image
         run: |
-          sudo ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
+          ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
             ARCH_USB_QEMU_LOG="$RUNNER_TEMP/arch-usb-qemu.log" \
-            scripts/build-arch-usb.sh
+            bash ./scripts/build-arch-usb.sh
 
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
