@@ -1,0 +1,38 @@
+name: arch-usb
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            curl \
+            dosfstools \
+            e2fsprogs \
+            gdisk \
+            ovmf \
+            qemu-system-x86 \
+            qemu-utils \
+            zstd
+
+      - name: Build arch USB image
+        run: |
+          sudo ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
+            ARCH_USB_QEMU_LOG="$RUNNER_TEMP/arch-usb-qemu.log" \
+            scripts/build-arch-usb.sh
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-usb
+          path: |
+            ${{ runner.temp }}/arch-usb.raw
+            ${{ runner.temp }}/arch-usb-qemu.log
+          if-no-files-found: error
