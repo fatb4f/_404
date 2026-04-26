@@ -26,7 +26,7 @@ trap cleanup EXIT
 
 require_root() {
   if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
-    exec sudo -E -- "$0" "$@"
+    exec sudo -E -- bash "$0" "$@"
   fi
 }
 

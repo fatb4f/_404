@@ -24,7 +24,7 @@ jobs:
 
       - name: Build arch USB image
         run: |
-          ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
+          sudo ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
             ARCH_USB_QEMU_LOG="$RUNNER_TEMP/arch-usb-qemu.log" \
             bash ./scripts/build-arch-usb.sh
 
