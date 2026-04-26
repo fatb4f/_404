@@ -14,18 +14,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             curl \
-            dosfstools \
-            e2fsprogs \
-            gdisk \
-            ovmf \
-            qemu-system-x86 \
-            qemu-utils \
-            zstd
+            qemu-utils
 
       - name: Build arch USB image
         run: |
-          sudo ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
-            ARCH_USB_QEMU_LOG="$RUNNER_TEMP/arch-usb-qemu.log" \
+          ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
             bash ./scripts/build-arch-usb.sh
 
       - name: Upload image artifact
