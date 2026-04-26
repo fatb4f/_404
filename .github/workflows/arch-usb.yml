@@ -12,13 +12,11 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            curl \
-            qemu-utils
+          sudo apt-get install -y curl
 
       - name: Build arch USB image
         run: |
-          ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
+          ARCH_USB_ISO="$RUNNER_TEMP/archlinux-2026.04.01-x86_64.iso" \
             bash ./scripts/build-arch-usb.sh
 
       - name: Upload image artifact
@@ -26,6 +24,5 @@ jobs:
         with:
           name: arch-usb
           path: |
-            ${{ runner.temp }}/arch-usb.raw
-            ${{ runner.temp }}/arch-usb-qemu.log
+            ${{ runner.temp }}/archlinux-2026.04.01-x86_64.iso
           if-no-files-found: error

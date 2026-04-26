@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RAW=${ARCH_USB_RAW:-/tmp/arch-usb.raw}
-QCOW2=${ARCH_USB_QCOW2:-/tmp/Arch-Linux-x86_64-basic.qcow2}
-SHA256_FILE=${ARCH_USB_SHA256_FILE:-/tmp/Arch-Linux-x86_64-basic.qcow2.SHA256}
+ISO=${ARCH_USB_ISO:-/tmp/archlinux-2026.04.01-x86_64.iso}
+SHA256_FILE=${ARCH_USB_SHA256_FILE:-/tmp/archlinux-2026.04.01-x86_64.iso.sha256}
 TARGET=${ARCH_USB_FLASH_TARGET:-}
-IMAGE_URL=${ARCH_USB_IMAGE_URL:-https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-basic.qcow2}
-SHA256_URL=${ARCH_USB_SHA256_URL:-https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-basic.qcow2.SHA256}
+IMAGE_URL=${ARCH_USB_IMAGE_URL:-https://geo.mirror.pkgbuild.com/iso/2026.04.01/archlinux-2026.04.01-x86_64.iso}
+SHA256_URL=${ARCH_USB_SHA256_URL:-https://geo.mirror.pkgbuild.com/iso/2026.04.01/sha256sums.txt}
 
 cleanup() {
   set +e
-  rm -f "$QCOW2" "$SHA256_FILE"
+  rm -f "$ISO" "$SHA256_FILE"
 }
 trap cleanup EXIT
 
@@ -35,26 +34,33 @@ if [[ -n "$TARGET" ]]; then
   fi
 fi
 
-mkdir -p "$(dirname "$RAW")"
-rm -f "$RAW" "$QCOW2" "$SHA256_FILE"
+mkdir -p "$(dirname "$ISO")"
+rm -f "$ISO" "$SHA256_FILE"
 
-curl -fsSL "$IMAGE_URL" -o "$QCOW2"
+curl -fsSL "$IMAGE_URL" -o "$ISO"
 curl -fsSL "$SHA256_URL" -o "$SHA256_FILE"
 
-(
-  cd "$(dirname "$QCOW2")"
-  sha256sum -c "$(basename "$SHA256_FILE")"
-)
+expected_sum="$(
+  awk '
+    $2 == "archlinux-2026.04.01-x86_64.iso" { print $1; exit }
+  ' "$SHA256_FILE"
+)"
 
-qemu-img info "$QCOW2"
-qemu-img check "$QCOW2"
+if [[ -z "$expected_sum" ]]; then
+  echo "could not locate ISO checksum in sha256sums.txt" >&2
+  exit 1
+fi
 
-qemu-img convert -p -f qcow2 -O raw "$QCOW2" "$RAW"
+actual_sum="$(sha256sum "$ISO" | awk '{print $1}')"
+if [[ "$actual_sum" != "$expected_sum" ]]; then
+  echo "checksum mismatch for $ISO" >&2
+  exit 1
+fi
 
 if [[ -n "$TARGET" ]]; then
-  dd if="$RAW" of="$TARGET" bs=16M conv=fsync status=progress
+  dd if="$ISO" of="$TARGET" bs=4M conv=fsync status=progress
   sync
-  echo "flashed $RAW to $TARGET"
+  echo "flashed $ISO to $TARGET"
 else
-  echo "built $RAW"
+  echo "built $ISO"
 fi
