@@ -16,11 +16,11 @@ LOOP_DEV=""
 
 cleanup() {
   set +e
-  if [[ -n "$MNT" ]]; then
+  if [[ -n "${MNT:-}" ]]; then
     umount "$MNT" 2>/dev/null || true
     rmdir "$MNT" 2>/dev/null || true
   fi
-  if [[ -n "$LOOP_DEV" ]]; then
+  if [[ -n "${LOOP_DEV:-}" ]]; then
     losetup -d "$LOOP_DEV" 2>/dev/null || true
   fi
   rm -f "$QCOW2" "$SHA256_FILE"
@@ -73,11 +73,9 @@ btrfs filesystem resize "$ROOT_SHRINK_SIZE" "$MNT"
 sync
 umount "$MNT"
 losetup -d "$LOOP_DEV"
-unset LOOP_DEV
+LOOP_DEV=""
 
-ROOT_START="$(
-  sgdisk -i "$ROOT_PART_NUM" "$RAW" | awk -F: '/First sector:/ { gsub(/^[[:space:]]+/, "", $2); print $2; exit }'
-)"
+ROOT_START="$(lsblk -no START "$ROOT_PART" | tr -d '[:space:]')"
 if [[ -z "$ROOT_START" ]]; then
   echo "could not determine root partition start" >&2
   exit 1
@@ -99,8 +97,9 @@ btrfs filesystem resize max "$MNT"
 sync
 umount "$MNT"
 losetup -d "$LOOP_DEV"
-unset LOOP_DEV
+LOOP_DEV=""
 rm -rf "$MNT"
+MNT=""
 
 if [[ -n "$TARGET" ]]; then
   dd if="$RAW" of="$TARGET" bs=16M conv=fsync status=progress
