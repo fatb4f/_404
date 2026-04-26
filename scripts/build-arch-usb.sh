@@ -9,7 +9,7 @@ SHA256_URL=${ARCH_USB_SHA256_URL:-https://geo.mirror.pkgbuild.com/iso/2026.04.01
 
 cleanup() {
   set +e
-  rm -f "$ISO" "$SHA256_FILE"
+  rm -f "$SHA256_FILE"
 }
 trap cleanup EXIT
 
