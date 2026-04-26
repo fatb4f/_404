@@ -71,15 +71,14 @@ MNT="$(mktemp -d /tmp/arch-usb.XXXXXX)"
 mount "$ROOT_PART" "$MNT"
 btrfs filesystem resize "$ROOT_SHRINK_SIZE" "$MNT"
 sync
-umount "$MNT"
-losetup -d "$LOOP_DEV"
-LOOP_DEV=""
-
 ROOT_START="$(lsblk -no START "$ROOT_PART" | tr -d '[:space:]')"
 if [[ -z "$ROOT_START" ]]; then
   echo "could not determine root partition start" >&2
   exit 1
 fi
+umount "$MNT"
+losetup -d "$LOOP_DEV"
+LOOP_DEV=""
 
 truncate -s "$FINAL_SIZE" "$RAW"
 sgdisk --move-second-header \
