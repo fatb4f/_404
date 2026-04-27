@@ -2,7 +2,7 @@ local M = {}
 
 local clip_cache = { {}, "v" }
 
-local function xclip_env()
+local function helper_env()
   local display = vim.env.DISPLAY
   if not display or display == "" then
     display = ":0"
@@ -16,37 +16,68 @@ local function xclip_env()
   return cmd
 end
 
-local function run_helper(cmd, input)
-  if vim.fn.executable(cmd) ~= 1 then
+local function has_cmd(cmd)
+  return vim.fn.executable(cmd) == 1
+end
+
+local function run_xclip(args, input)
+  if not has_cmd("xclip") then
     return false
   end
 
+  local cmd = vim.list_extend(helper_env(), { "xclip" })
+  vim.list_extend(cmd, args)
   vim.fn.system(cmd, input or "")
   return vim.v.shell_error == 0
 end
 
-local function run_xclip(args, input)
-  local xclip = vim.fn.expand("~/.local/bin/xclip")
-  if vim.fn.executable(xclip) ~= 1 then
+local function run_wl_copy(input)
+  if not has_cmd("wl-copy") then
     return false
   end
 
-  local cmd = vim.list_extend(xclip_env(), { xclip })
-  vim.list_extend(cmd, args)
-  vim.fn.system(cmd, input or "")
+  vim.fn.system({ "wl-copy" }, input or "")
   return vim.v.shell_error == 0
+end
+
+local function run_wl_paste()
+  if not has_cmd("wl-paste") then
+    return nil
+  end
+
+  local result = vim.fn.systemlist({ "wl-paste", "--no-newline" })
+  if vim.v.shell_error == 0 then
+    return { result, "v" }
+  end
+end
+
+local function provider()
+  if vim.env.WAYLAND_DISPLAY and vim.env.WAYLAND_DISPLAY ~= "" then
+    if has_cmd("wl-copy") and has_cmd("wl-paste") then
+      return "wayland"
+    end
+  end
+
+  if has_cmd("xclip") then
+    return "xclip"
+  end
+
+  if has_cmd("wl-copy") and has_cmd("wl-paste") then
+    return "wayland"
+  end
+
+  return nil
 end
 
 local function copy(lines, regtype)
   local text = table.concat(lines, "\n")
   clip_cache = { lines, regtype }
 
-  if run_xclip({ "-in", "-selection", "clipboard" }, text) then
+  if provider() == "wayland" and run_wl_copy(text) then
     return
   end
 
-  local copy_cmd = vim.fn.expand("~/.local/bin/copy")
-  if run_helper(copy_cmd, text) then
+  if run_xclip({ "-in", "-selection", "clipboard" }, text) then
     return
   end
 
@@ -54,18 +85,14 @@ local function copy(lines, regtype)
 end
 
 local function paste()
-  local xclip = vim.fn.expand("~/.local/bin/xclip")
-  if vim.fn.executable(xclip) == 1 then
-    local cmd = vim.list_extend(xclip_env(), { xclip, "-out", "-selection", "clipboard" })
-    local result = vim.fn.systemlist(cmd)
-    if vim.v.shell_error == 0 then
-      return { result, "v" }
-    end
+  local wayland_result = run_wl_paste()
+  if wayland_result then
+    return wayland_result
   end
 
-  local paste_cmd = vim.fn.expand("~/.local/bin/paste")
-  if vim.fn.executable(paste_cmd) == 1 then
-    local result = vim.fn.systemlist(paste_cmd)
+  if has_cmd("xclip") then
+    local cmd = vim.list_extend(helper_env(), { "xclip", "-out", "-selection", "clipboard" })
+    local result = vim.fn.systemlist(cmd)
     if vim.v.shell_error == 0 then
       return { result, "v" }
     end

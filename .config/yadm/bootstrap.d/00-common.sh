@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-if [[ -n "${_404_BOOTSTRAP_COMMON_LOADED:-}" ]]; then
+if [[ -n "${YADM_BOOTSTRAP_COMMON_LOADED:-}" ]]; then
   return 0
 fi
-_404_BOOTSTRAP_COMMON_LOADED=1
+YADM_BOOTSTRAP_COMMON_LOADED=1
 
 BOOTSTRAP_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 BOOTSTRAP_PKG_DIR="$BOOTSTRAP_DIR/pkgs"

@@ -163,10 +163,10 @@ install_userland_tools() {
   local manifest=${1:?manifest}
   local cache_home=${XDG_CACHE_HOME:-$HOME/.cache}
   local state_home=${XDG_STATE_HOME:-$HOME/.local/state}
-  local bin_dir=${_404_LOCAL_BIN:-$HOME/.local/bin}
-  local opt_root=${_404_LOCAL_OPT:-$HOME/.local/opt}
-  local cache_root=${_404_ARTIFACT_CACHE:-$cache_home/_404/artifacts}
-  local receipt=${_404_USERLAND_RECEIPT:-$state_home/_404/userland-installed.tsv}
+  local bin_dir=${USERLAND_BIN:-$HOME/.local/bin}
+  local opt_root=${USERLAND_OPT_HOME:-$HOME/.local/opt}
+  local cache_root=${USERLAND_ARTIFACT_CACHE:-$cache_home/userland/artifacts}
+  local receipt=${USERLAND_RECEIPT:-$state_home/userland/installed.tsv}
   local receipt_tmp=
 
   if [[ "${DRY_RUN:-0}" != 1 ]]; then
