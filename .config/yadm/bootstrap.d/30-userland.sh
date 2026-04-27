@@ -92,14 +92,16 @@ find_bin_in_tree() {
 release_pattern_matches_latest() {
   local repo=${1:?repo} pkg=${2:?pkg}
   local asset matched=0
+  local payload
 
+  payload="$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest")"
   while IFS= read -r asset; do
     [[ -n "$asset" ]] || continue
     if [[ "$asset" == $pkg ]]; then
       matched=1
       break
     fi
-  done < <(gh release view -R "$repo" --json assets --jq '.assets[].name')
+  done < <(printf '%s\n' "$payload" | jq -r '.assets[].name')
 
   [[ "$matched" == 1 ]] || die "no latest release asset in $repo matches $pkg"
 }
@@ -168,7 +170,7 @@ install_userland_tools() {
   local receipt_tmp=
 
   if [[ "${DRY_RUN:-0}" != 1 ]]; then
-    require_cmd gh jq tar unzip find head install cp ln chmod || die 'missing required userland installer command'
+    require_cmd gh curl jq tar unzip find head install cp ln chmod || die 'missing required userland installer command'
   fi
 
   ensure_dir "$bin_dir"
