@@ -1,0 +1,12 @@
+[package_management]
+manager = "uv"
+
+[mcp]
+presets = ["marimo"]
+
+[mcp.mcpServers.just_xtrl]
+command = "xtrl-just-mcp"
+
+[mcp.mcpServers.backlog]
+command = "backlog"
+args = ["mcp", "start"]

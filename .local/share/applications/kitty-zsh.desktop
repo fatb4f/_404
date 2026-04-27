@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Kitty
+Comment=Terminal emulator
+Exec=kitty
+TryExec=kitty
+Icon=kitty
+Terminal=false
+Categories=System;TerminalEmulator;
+StartupNotify=true
+StartupWMClass=kitty
