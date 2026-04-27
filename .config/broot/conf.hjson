@@ -34,7 +34,7 @@ imports: [
     "verbs.hjson"
     "preview_transformers.hjson"
     "special_paths.hjson"
-    "/home/x404/.local/state/broot/current-skin.hjson"
+    "$XDG_STATE_HOME/broot/current-skin.hjson"
 ]
 
 ###############################################################
