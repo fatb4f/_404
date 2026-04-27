@@ -1,0 +1,19 @@
+name: dotctl
+help: Dotfiles lifecycle adapter
+version: 0.1.0
+
+commands:
+  - name: audit
+    help: Run the strict CUE-backed dotfiles audit
+
+  - name: check
+    help: Run shell, bootstrap, audit, and yadm checks
+
+  - name: bootstrap
+    help: Run yadm bootstrap
+
+  - name: status
+    help: Show yadm repository status
+
+  - name: provision
+    help: Run the phase-0 provisioning handoff
