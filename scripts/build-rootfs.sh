@@ -55,6 +55,11 @@ sudo docker run --rm \
 rm -f "$ROOTFS_IMG" "$ROOTFS_IMG_ZST"
 truncate -s "$ROOTFS_SIZE" "$ROOTFS_IMG"
 sudo mkfs.ext4 -F -L ARCHROOT -d "$ROOTFS_DIR" "$ROOTFS_IMG"
+root_fstype="$(blkid -p -o value -s TYPE "$ROOTFS_IMG")"
+if [[ "$root_fstype" != ext4 ]]; then
+  echo "rootfs image is not ext4: $root_fstype" >&2
+  exit 1
+fi
 sudo zstd -19 -T0 -f "$ROOTFS_IMG" -o "$ROOTFS_IMG_ZST"
 
 echo "Rootfs artifacts written to $OUTDIR"
