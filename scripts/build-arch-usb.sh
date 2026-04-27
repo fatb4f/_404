@@ -97,6 +97,11 @@ udevadm settle
 cgpt add -i 1 -t kernel -P 15 -T 1 -S 1 "$LOOP_DEV"
 
 mkfs.ext4 -F -L ARCHROOT "${LOOP_DEV}p2"
+root_fstype="$(lsblk -no FSTYPE "${LOOP_DEV}p2" | tr -d '[:space:]')"
+if [[ "$root_fstype" != ext4 ]]; then
+  echo "root partition is not ext4: $root_fstype" >&2
+  exit 1
+fi
 root_uuid="$(blkid -s UUID -o value "${LOOP_DEV}p2")"
 if [[ -z "$root_uuid" ]]; then
   echo "could not determine root filesystem UUID" >&2

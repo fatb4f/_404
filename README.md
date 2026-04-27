@@ -137,4 +137,5 @@ The next high-signal work is to harden the GitHub release installer:
 
 The `arch-usb` workflow now assembles a Submarine-shaped external disk image
 from a cached `arch-rootfs` artifact and the `submarine-x86.kpart` payload.
-The rootfs stage is plain Arch and is built separately before image assembly.
+The shipped image uses an ext4 root partition, and the rootfs stage is built
+separately before image assembly.
