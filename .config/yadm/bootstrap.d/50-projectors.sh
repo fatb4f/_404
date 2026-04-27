@@ -1,28 +1,37 @@
 # shellcheck shell=bash
 
 bootstrap_project_dotctl() {
-  local src
+  local root
+  local generated
   local dst
 
   bootstrap_require_env \
     XDG_CONFIG_HOME \
     TOOL_PATH_HOME
 
-  src="$XDG_CONFIG_HOME/dotctl/bin/dotctl"
+  root="$XDG_CONFIG_HOME/dotctl"
+  generated="$root/dotctl"
   dst="$TOOL_PATH_HOME/dotctl"
 
-  if [[ ! -x "$src" ]]; then
-    printf 'missing executable dotctl source: %s\n' "$src" >&2
-    return 1
-  fi
-
   if [[ "${DRY_RUN:-0}" == 1 ]]; then
-    printf 'DRY_RUN project dotctl %s -> %s\n' "$dst" "$src"
+    printf 'DRY_RUN generate/project dotctl -> %s\n' "$dst"
     return 0
   fi
 
+  (
+    cd "$root" || return
+    bashly generate
+    chmod 0755 "$generated"
+  )
+
+  if [[ ! -x "$generated" ]]; then
+    printf 'missing generated dotctl: %s\n' "$generated" >&2
+    return 1
+  fi
+
   mkdir -p "$TOOL_PATH_HOME"
-  ln -sfn "$src" "$dst"
+  install -m 0755 "$generated" "$dst"
+  rm -f "$generated"
 }
 
 bootstrap_project_dotctl
