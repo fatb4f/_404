@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 export PIP_CACHE_DIR="${PIP_CACHE_DIR:-$XDG_CACHE_HOME/pip}"
 export PYTHONPYCACHEPREFIX="${PYTHONPYCACHEPREFIX:-$XDG_CACHE_HOME/pycache}"
 export PYTEST_ADDOPTS="${PYTEST_ADDOPTS:--o cache_dir=$XDG_CACHE_HOME/pytest}"

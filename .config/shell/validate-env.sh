@@ -7,10 +7,11 @@ bash -n "$root/load-env.sh"
 zsh -n "$root/load-env.sh"
 
 for f in "$root"/env.d/*.sh; do
-  bash -n "$f"
-  zsh -n "$f"
+	bash -n "$f"
+	zsh -n "$f"
 done
 
+# shellcheck disable=SC2016
 env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/bash bash --noprofile --norc -c '
   . "$HOME/.config/shell/load-env.sh"
 
@@ -26,6 +27,7 @@ env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/bash bash --noprofile --norc
   esac
 '
 
+# shellcheck disable=SC2016
 env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/zsh zsh -f -c '
   . "$HOME/.config/shell/load-env.sh"
 
@@ -42,5 +44,6 @@ env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/zsh zsh -f -c '
 '
 
 "$root/check-env-ownership.py" "$root"
+bash "$root/tier0-check.sh" "$root"
 
 echo "shell env validation passed"

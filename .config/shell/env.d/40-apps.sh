@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 export KITTY_CONFIG_DIRECTORY="${KITTY_CONFIG_DIRECTORY:-$XDG_CONFIG_HOME/kitty}"
 export KITTY_CACHE_DIRECTORY="${KITTY_CACHE_DIRECTORY:-$XDG_CACHE_HOME/kitty}"
 export EDITOR="${EDITOR:-$HOME/.local/bin/nvim}"

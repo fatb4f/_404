@@ -11,6 +11,12 @@ check:
 check-shell:
     {{load_env}}; "$HOME/.config/shell/validate-env.sh"
 
+check-tier0:
+    bash "$HOME/.config/shell/tier0-check.sh"
+
+lint-shell:
+    bash "$HOME/.config/shell/lint-shell.sh"
+
 check-bootstrap:
     {{load_env}}; bash -n "$HOME/.config/yadm/bootstrap"
     {{load_env}}; for f in "$HOME"/.config/yadm/bootstrap.d/*.sh; do bash -n "$f"; done
