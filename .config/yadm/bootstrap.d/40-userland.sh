@@ -248,6 +248,120 @@ install_userland_tools() {
 
 install_userland_tools "$BOOTSTRAP_PKG_DIR/artifacts.json"
 
+bootstrap_require_ruby() {
+  local min="${1:-3.2}"
+
+  command -v ruby >/dev/null 2>&1 || {
+    printf 'missing required command: ruby\n' >&2
+    return 1
+  }
+
+  command -v gem >/dev/null 2>&1 || {
+    printf 'missing required command: gem\n' >&2
+    return 1
+  }
+
+  ruby -rrubygems -e '
+required = Gem::Version.new(ARGV[0])
+current = Gem::Version.new(RUBY_VERSION)
+exit(current >= required ? 0 : 1)
+' "$min" || {
+    printf 'ruby >= %s required, found %s\n' "$min" "$(ruby -v)" >&2
+    return 1
+  }
+}
+
+bootstrap_install_ruby_gem() {
+  local name="$1"
+  local version="$2"
+  local executable="$3"
+  local min_ruby="$4"
+
+  local cache_home="${XDG_CACHE_HOME:-$HOME/.cache}"
+  local state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+  local bin_dir="${USERLAND_BIN:-$HOME/.local/bin}"
+  local opt_root="${USERLAND_OPT_HOME:-$HOME/.local/opt}"
+  local cache_root="${USERLAND_ARTIFACT_CACHE:-$cache_home/userland/artifacts}"
+  local receipt="${USERLAND_RECEIPT:-$state_home/userland/installed.tsv}"
+  local tool_path_home="${TOOL_PATH_HOME:-$HOME/.local/share/path}"
+  local root gem_home gem_bindir cache_dir wrapper
+
+  root="$opt_root/ruby-gems/$name/$version"
+  gem_home="$root/gems"
+  gem_bindir="$root/bin"
+  cache_dir="$cache_root/ruby-gems/$name/$version"
+  wrapper="$tool_path_home/$executable"
+
+  if [[ "${DRY_RUN:-0}" == 1 ]]; then
+    printf '[dry-run] install ruby gem %s %s\n' "$name" "$version"
+    printf '[dry-run] mkdir -p %q %q %q %q\n' "$gem_home" "$gem_bindir" "$cache_dir" "$tool_path_home"
+    printf '[dry-run] gem install %q --version %q --install-dir %q --bindir %q --no-document\n' "$name" "$version" "$gem_home" "$gem_bindir"
+    printf '[dry-run] install wrapper %q -> %q\n' "$wrapper" "$gem_bindir/$executable"
+    return 0
+  fi
+
+  bootstrap_require_ruby "$min_ruby"
+
+  if [[ -x "$wrapper" ]] && "$wrapper" --version 2>/dev/null | grep -q "$version"; then
+    return 0
+  fi
+
+  ensure_dir "$gem_home"
+  ensure_dir "$gem_bindir"
+  ensure_dir "$cache_dir"
+  ensure_dir "$tool_path_home"
+
+  env \
+    GEM_HOME="$gem_home" \
+    GEM_PATH="$gem_home" \
+    GEM_SPEC_CACHE="$cache_dir/specs" \
+    gem install "$name" \
+      --version "$version" \
+      --install-dir "$gem_home" \
+      --bindir "$gem_bindir" \
+      --no-document
+
+  cat > "$wrapper" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+export GEM_HOME='$gem_home'
+export GEM_PATH='$gem_home'
+export GEM_SPEC_CACHE='$cache_dir/specs'
+exec '$gem_bindir/$executable' "\$@"
+EOF
+
+  chmod 0755 "$wrapper"
+
+  "$wrapper" --version | grep -q "$version"
+
+  mkdir -p "$(dirname -- "$receipt")"
+  printf 'ruby-gem\t%s\t%s\t%s\n' "$name" "$version" "$wrapper" >> "$receipt"
+}
+
+bootstrap_install_ruby_gems_manifest() {
+  local manifest="$BOOTSTRAP_PKG_DIR/ruby-gems.json"
+  local spec name version executable ruby_req min_ruby
+
+  [[ -f "$manifest" ]] || return 0
+
+  command -v jq >/dev/null 2>&1 || {
+    printf 'missing required command: jq\n' >&2
+    return 1
+  }
+
+  while IFS= read -r spec; do
+    name="$(jq -r '.name' <<<"$spec")"
+    version="$(jq -r '.version' <<<"$spec")"
+    executable="$(jq -r '.executable' <<<"$spec")"
+    ruby_req="$(jq -r '.ruby' <<<"$spec")"
+    min_ruby="${ruby_req#>=}"
+
+    bootstrap_install_ruby_gem "$name" "$version" "$executable" "$min_ruby"
+  done < <(jq -c '.gems[]' "$manifest")
+}
+
+bootstrap_install_ruby_gems_manifest
+
 bootstrap_install_cue() {
   local version="${CUE_VERSION:-v0.16.1}"
   local repo="cue-lang/cue"
@@ -317,7 +431,6 @@ bootstrap_install_cue() {
     return 0
   fi
 
-  ensure_dir "$bin_dir"
   ensure_dir "$cache_dir"
   ensure_dir "$install_dir/bin"
   ensure_dir "$tool_path_home"

@@ -26,3 +26,6 @@ shellcheck
 shfmt
 openssl
 libwayland-egl1
+ruby
+ruby-dev
+libyaml-dev

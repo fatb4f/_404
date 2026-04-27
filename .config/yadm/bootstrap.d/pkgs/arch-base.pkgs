@@ -25,3 +25,4 @@ shellcheck
 shfmt
 openssl
 wayland
+ruby
