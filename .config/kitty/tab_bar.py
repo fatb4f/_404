@@ -23,7 +23,7 @@ date_color = as_rgb(color_as_int(opts.color8))
 RIGHT_MARGIN = 1
 REFRESH_TIME = 1
 ICON = "  "
-HOME_DIR = "/home/_404"
+HOME_DIR = "/home/x404"
 
 UNPLUGGED_ICONS = {
     10: "",

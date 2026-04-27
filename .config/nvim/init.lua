@@ -2,8 +2,8 @@
 do
   local path = vim.env.PATH or ""
   local wanted = {
-    "/home/_404/.local/bin",
-    "/home/_404/.local/opt/kitty/bin",
+    "/home/x404/.local/bin",
+    "/home/x404/.local/opt/kitty/bin",
   }
 
   for i = #wanted, 1, -1 do

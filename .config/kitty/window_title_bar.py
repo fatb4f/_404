@@ -1,7 +1,7 @@
 # pyright: reportMissingImports=false
 from kitty.fast_data_types import Screen
 
-HOME_DIR = "/home/_404"
+HOME_DIR = "/home/x404"
 
 
 def _short_path(cwd: str, title: str) -> str:
