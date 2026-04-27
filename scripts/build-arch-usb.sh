@@ -158,6 +158,9 @@ extract_rootfs() {
 
   mkdir -p "$MNT/boot/grub"
   mkdir -p "$MNT/etc/pacman.d"
+  cat >"$MNT/etc/vconsole.conf" <<'EOF'
+KEYMAP=us
+EOF
   cat >"$MNT/etc/pacman.conf" <<'EOF'
 [options]
 HoldPkg     = pacman glibc
@@ -204,13 +207,7 @@ EOF
   '
 
   sync
-  umount "$MNT/etc/resolv.conf" 2>/dev/null || true
-  umount "$MNT/run" 2>/dev/null || true
-  umount "$MNT/sys" 2>/dev/null || true
-  umount "$MNT/proc" 2>/dev/null || true
-  umount "$MNT/dev/pts" 2>/dev/null || true
-  umount "$MNT/dev" 2>/dev/null || true
-  umount "$MNT"
+  umount -R "$MNT" 2>/dev/null || true
 
   dd if="$SUBMARINE_KPART" of="${LOOP_DEV}p1" bs=4M conv=fsync status=progress
   sync
