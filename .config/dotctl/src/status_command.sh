@@ -1,5 +1,4 @@
-yadm status --short --branch -- \
-  .config/dotctl \
-  .config/shell \
-  .config/yadm \
-  .config/dotfiles-audit
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/env.sh"
+source "$DOTCTL_CONFIG_HOME/src/lib/yadm.sh"
+
+dotctl_yadm_status

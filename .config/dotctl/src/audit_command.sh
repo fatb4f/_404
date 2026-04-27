@@ -1,5 +1,4 @@
-"$HOME/.config/dotfiles-audit/audit.sh" \
-  .config/bin \
-  .config/broot \
-  .config/nvim \
-  .config/uv
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/env.sh"
+source "$DOTCTL_CONFIG_HOME/src/lib/audit.sh"
+
+dotctl_audit_run
