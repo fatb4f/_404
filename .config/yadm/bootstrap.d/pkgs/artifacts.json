@@ -58,6 +58,13 @@
       "bins": ["fzf"]
     },
     {
+      "name": "just",
+      "repo": "casey/just",
+      "pkg": "just-*-x86_64-unknown-linux-musl.tar.gz",
+      "install": "bin",
+      "bins": ["just"]
+    },
+    {
       "name": "uv",
       "repo": "astral-sh/uv",
       "pkg": "uv-x86_64-unknown-linux-gnu.tar.gz",
