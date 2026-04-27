@@ -1,17 +1,12 @@
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
-audit_targets := ".config/bin .config/broot .config/nvim .config/uv"
-
 load_env := '. "$HOME/.config/shell/load-env.sh"'
 
 default:
     just --list
 
 check:
-    just check-shell
-    just check-bootstrap
-    just audit
-    yadm status --short --branch
+    dotctl check
 
 check-shell:
     {{load_env}}; "$HOME/.config/shell/validate-env.sh"
@@ -22,15 +17,17 @@ check-bootstrap:
     {{load_env}}; DRY_RUN=1 HOST_CLASS="${HOST_CLASS:-debian-base}" "$HOME/.config/yadm/bootstrap"
 
 bootstrap:
-    {{load_env}}; yadm bootstrap
+    dotctl bootstrap
 
 audit:
-    {{load_env}}; "$HOME/.config/dotfiles-audit/audit.sh" {{audit_targets}}
+    dotctl audit
 
 provision:
-    {{load_env}}; yadm bootstrap
-    just check
+    dotctl provision
+
+status:
+    dotctl status
 
 push:
-    just check
+    dotctl check
     {{load_env}}; yadm push origin main
