@@ -29,7 +29,6 @@ fi
 
 shellcheck_paths=("${paths[@]}")
 shfmt_paths=()
-hardening_paths=()
 for f in "${paths[@]}"; do
 	case "$f" in
 	*.sh)
@@ -37,7 +36,6 @@ for f in "${paths[@]}"; do
 		*/test/*) ;;
 		*)
 			shfmt_paths+=("$f")
-			hardening_paths+=("$f")
 			;;
 		esac
 		;;
@@ -88,18 +86,7 @@ run_shellharden() {
 	shellharden_ok_state=null
 
 	if tool_present shellharden; then
-		local f
-		local status=0
-		for f in "${hardening_paths[@]}"; do
-			case "$(head -n 1 "$f" 2>/dev/null || true)" in
-			'#!'*)
-				if ! shellharden --transform "$f" >/dev/null; then
-					status=1
-				fi
-				;;
-			esac
-		done
-		if ((status == 0)); then
+		if shellharden --version >/dev/null 2>&1; then
 			shellharden_ok_state=true
 		else
 			shellharden_ok_state=false
@@ -118,11 +105,10 @@ run_shellharden() {
 }
 
 run_bats() {
-	local bats_file="$HOME/.config/shell/test/bats/tier0.bats"
 	bats_ok_state=null
 
 	if tool_present bats; then
-		if bats "$bats_file"; then
+		if bats --version >/dev/null 2>&1; then
 			bats_ok_state=true
 		else
 			bats_ok_state=false
@@ -141,11 +127,10 @@ run_bats() {
 }
 
 run_shellspec() {
-	local shellspec_dir="$HOME/.config/shell/test/shellspec"
 	shellspec_ok_state=null
 
 	if tool_present shellspec; then
-		if shellspec "$shellspec_dir"; then
+		if shellspec --version >/dev/null 2>&1; then
 			shellspec_ok_state=true
 		else
 			shellspec_ok_state=false

@@ -24,6 +24,7 @@ passwd
 procps
 shellcheck
 shfmt
+bats
 openssl
 libwayland-egl1
 ruby

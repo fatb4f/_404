@@ -8,6 +8,7 @@ artifact_rows() {
     | [
         .name,
         .repo,
+        (.ref // "latest"),
         .pkg,
         (.install // "bin"),
         (.opt // .name),
@@ -15,6 +16,30 @@ artifact_rows() {
       ]
     | @tsv
   ' "$manifest"
+}
+
+download_release_artifact() {
+  local repo=${1:?repo} ref=${2:?ref} pkg=${3:?pkg} dest_dir=${4:?dest_dir}
+
+  ensure_dir "$dest_dir"
+
+  if [[ -n "$ref" && "$ref" != latest ]]; then
+    run gh release download -R "$repo" "$ref" --pattern "$pkg" --dir "$dest_dir"
+  else
+    run gh release download -R "$repo" --pattern "$pkg" --dir "$dest_dir"
+  fi
+}
+
+download_source_archive() {
+  local repo=${1:?repo} ref=${2:?ref} dest=${3:?dest}
+
+  ensure_dir "$(dirname -- "$dest")"
+  if [[ "${DRY_RUN:-0}" == 1 ]]; then
+    printf '[dry-run] curl -fsSL -o %q https://github.com/%s/archive/refs/tags/%s.tar.gz\n' "$dest" "$repo" "$ref"
+    return 0
+  fi
+
+  curl -fsSL -o "$dest" "https://github.com/$repo/archive/refs/tags/$ref.tar.gz"
 }
 
 extract_artifact() {
@@ -87,6 +112,24 @@ find_bin_in_tree() {
 
   [[ "${#matches[@]}" == 1 ]] || die "expected exactly one binary named $bin in $tree, found ${#matches[@]}"
   printf '%s\n' "${matches[0]}"
+}
+
+source_tree_root() {
+  local tree=${1:?tree}
+  local -a dirs=()
+  local dir
+
+  while IFS= read -r dir; do
+    [[ -n "$dir" ]] || continue
+    dirs+=("$dir")
+  done < <(find "$tree" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
+
+  if [[ "${#dirs[@]}" == 1 ]]; then
+    printf '%s\n' "${dirs[0]}"
+    return 0
+  fi
+
+  printf '%s\n' "$tree"
 }
 
 release_pattern_matches_latest() {
@@ -184,14 +227,14 @@ install_userland_tools() {
   fi
 
   local rows=()
-  local row name repo pkg strategy opt bins_csv first_bin tmp artifact extracted
+  local row name repo ref pkg strategy opt bins_csv first_bin tmp artifact extracted
   mapfile -t rows < <(artifact_rows "$manifest")
 
   for row in "${rows[@]}"; do
     [[ -n "$row" ]] || continue
-    IFS=$'\t' read -r name repo pkg strategy opt bins_csv <<< "$row"
+    IFS=$'\t' read -r name repo ref pkg strategy opt bins_csv <<< "$row"
 
-    [[ -n "$name" && -n "$repo" && -n "$pkg" && -n "$strategy" && -n "$bins_csv" ]] \
+    [[ -n "$name" && -n "$repo" && -n "$strategy" && -n "$bins_csv" ]] \
       || die "bad userland artifact row: $row"
 
     first_bin=${bins_csv%%,*}
@@ -204,15 +247,22 @@ install_userland_tools() {
       tmp="$cache_root/.tmp.$name.DRYRUN"
       extracted="$tmp/extract"
       artifact="$tmp/<downloaded-artifact>"
-      info "would install $name from latest $repo matching $pkg"
-      printf '[dry-run] jq -r %q %q\n' '.artifacts[] | select((.enabled // true) == true) | [.name,.repo,.pkg,(.install // "bin"),(.opt // .name),(.bins | join(","))] | @tsv' "$manifest"
-      printf '[dry-run] gh release download -R %q --pattern %q --dir %q\n' "$repo" "$pkg" "$tmp"
-      printf '[dry-run] extract %q into %q\n' "$artifact" "$extracted"
+      info "would install $name from $repo"
+      printf '[dry-run] jq -r %q %q\n' '.artifacts[] | select((.enabled // true) == true) | [.name,.repo,(.ref // "latest"),.pkg,(.install // "bin"),(.opt // .name),(.bins | join(","))] | @tsv' "$manifest"
       case "$strategy" in
         bin)
+          printf '[dry-run] gh release download -R %q %q --pattern %q --dir %q\n' "$repo" "$ref" "$pkg" "$tmp"
+          printf '[dry-run] extract %q into %q\n' "$artifact" "$extracted"
           printf '[dry-run] install bins %q into %q\n' "$bins_csv" "$bin_dir"
           ;;
         opt)
+          printf '[dry-run] gh release download -R %q %q --pattern %q --dir %q\n' "$repo" "$ref" "$pkg" "$tmp"
+          printf '[dry-run] extract %q into %q\n' "$artifact" "$extracted"
+          printf '[dry-run] install opt tree %q into %q and symlink bins %q into %q\n' "$opt" "$opt_root" "$bins_csv" "$bin_dir"
+          ;;
+        source)
+          printf '[dry-run] curl -fsSL -o %q https://github.com/%s/archive/refs/tags/%s.tar.gz\n' "$artifact" "$repo" "$ref"
+          printf '[dry-run] extract %q into %q\n' "$artifact" "$extracted"
           printf '[dry-run] install opt tree %q into %q and symlink bins %q into %q\n' "$opt" "$opt_root" "$bins_csv" "$bin_dir"
           ;;
         *)
@@ -225,11 +275,27 @@ install_userland_tools() {
     tmp="$(mktemp -d "${cache_root}/.tmp.${name}.XXXXXX")"
     extracted="$tmp/extract"
 
-    info "downloading latest $name from $repo matching $pkg"
-    release_pattern_matches_latest "$repo" "$pkg"
-    gh release download -R "$repo" --pattern "$pkg" --dir "$tmp"
+    case "$strategy" in
+      bin|opt)
+        if [[ -n "$ref" ]]; then
+          info "downloading $name release from $repo tag $ref matching $pkg"
+        else
+          info "downloading latest $name release from $repo matching $pkg"
+          release_pattern_matches_latest "$repo" "$pkg"
+        fi
+        download_release_artifact "$repo" "$ref" "$pkg" "$tmp"
+        artifact="$(find_one_artifact "$tmp")"
+        ;;
+      source)
+        info "downloading $name source archive from $repo tag $ref"
+        artifact="$tmp/$name.tar.gz"
+        download_source_archive "$repo" "$ref" "$artifact"
+        ;;
+      *)
+        die "unsupported install strategy: $strategy"
+        ;;
+    esac
 
-    artifact="$(find_one_artifact "$tmp")"
     extract_artifact "$artifact" "$extracted"
 
     case "$strategy" in
@@ -239,8 +305,8 @@ install_userland_tools() {
       opt)
         install_opt_tree_and_links "$extracted" "$opt_root" "$opt" "$bin_dir" "$bins_csv"
         ;;
-      *)
-        die "unsupported install strategy: $strategy"
+      source)
+        install_opt_tree_and_links "$(source_tree_root "$extracted")" "$opt_root" "$opt" "$bin_dir" "$bins_csv"
         ;;
     esac
   done

@@ -8,6 +8,14 @@
       "bins": ["bat"]
     },
     {
+      "name": "shellharden",
+      "repo": "anordal/shellharden",
+      "ref": "v4.3.1",
+      "pkg": "shellharden-x86_64-unknown-linux-musl.tar.gz",
+      "install": "bin",
+      "bins": ["shellharden"]
+    },
+    {
       "name": "eza",
       "repo": "eza-community/eza",
       "pkg": "eza_x86_64-unknown-linux-gnu.tar.gz",
@@ -42,6 +50,15 @@
       "install": "opt",
       "opt": "kitty",
       "bins": ["kitty", "kitten"]
+    },
+    {
+      "name": "shellspec",
+      "repo": "shellspec/shellspec",
+      "ref": "0.28.1",
+      "pkg": "shellspec-0.28.1.tar.gz",
+      "install": "source",
+      "opt": "shellspec/0.28.1",
+      "bins": ["shellspec"]
     },
     {
       "name": "tinty",
