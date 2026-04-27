@@ -247,3 +247,117 @@ install_userland_tools() {
 }
 
 install_userland_tools "$BOOTSTRAP_PKG_DIR/artifacts.json"
+
+bootstrap_install_cue() {
+  local version="${CUE_VERSION:-v0.16.1}"
+  local repo="cue-lang/cue"
+  local cache_home="${XDG_CACHE_HOME:-$HOME/.cache}"
+  local state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+  local bin_dir="${USERLAND_BIN:-$HOME/.local/bin}"
+  local opt_root="${USERLAND_OPT_HOME:-$HOME/.local/opt}"
+  local cache_root="${USERLAND_ARTIFACT_CACHE:-$cache_home/userland/artifacts}"
+  local receipt="${USERLAND_RECEIPT:-$state_home/userland/installed.tsv}"
+  local tool_path_home="${TOOL_PATH_HOME:-$HOME/.local/share/path}"
+  local goos goarch asset
+  local cache_dir install_dir tmp archive cue_bin
+
+  command -v gh >/dev/null 2>&1 || {
+    printf 'missing required command: gh\n' >&2
+    return 1
+  }
+
+  command -v jq >/dev/null 2>&1 || {
+    printf 'missing required command: jq\n' >&2
+    return 1
+  }
+
+  command -v tar >/dev/null 2>&1 || {
+    printf 'missing required command: tar\n' >&2
+    return 1
+  }
+
+  case "$(uname -s)" in
+    Linux) goos="linux" ;;
+    Darwin) goos="darwin" ;;
+    *)
+      printf 'unsupported OS for cue install: %s\n' "$(uname -s)" >&2
+      return 1
+      ;;
+  esac
+
+  case "$(uname -m)" in
+    x86_64|amd64) goarch="amd64" ;;
+    aarch64|arm64) goarch="arm64" ;;
+    *)
+      printf 'unsupported arch for cue install: %s\n' "$(uname -m)" >&2
+      return 1
+      ;;
+  esac
+
+  asset="cue_${version}_${goos}_${goarch}.tar.gz"
+  cache_dir="$cache_root/cue/$version"
+  install_dir="$opt_root/cue/$version"
+  tmp="$cache_dir/extract"
+  archive="$cache_dir/$asset"
+
+  if [[ -x "$install_dir/bin/cue" ]] &&
+     "$install_dir/bin/cue" version 2>/dev/null | grep -q "cue version $version"
+  then
+    ln -sfn -- "$install_dir/bin/cue" "$tool_path_home/cue"
+    return 0
+  fi
+
+  if [[ "${DRY_RUN:-0}" == 1 ]]; then
+    printf '[dry-run] install cue %s asset=%s\n' "$version" "$asset"
+    printf '[dry-run] mkdir -p %q %q %q\n' "$cache_dir" "$install_dir/bin" "$tool_path_home"
+    printf '[dry-run] gh release download -R %q --pattern %q --dir %q --clobber\n' "$repo" "$asset" "$cache_dir"
+    printf '[dry-run] tar -xzf %q -C %q\n' "$archive" "$tmp"
+    printf '[dry-run] install -m 0755 <extracted cue> %q\n' "$install_dir/bin/cue"
+    printf '[dry-run] ln -sfn %q %q\n' "$install_dir/bin/cue" "$tool_path_home/cue"
+    return 0
+  fi
+
+  ensure_dir "$bin_dir"
+  ensure_dir "$cache_dir"
+  ensure_dir "$install_dir/bin"
+  ensure_dir "$tool_path_home"
+  rm -rf -- "$tmp"
+  mkdir -p -- "$tmp"
+
+  gh release download "$version" \
+    --repo "$repo" \
+    --pattern "$asset" \
+    --dir "$cache_dir" \
+    --clobber
+
+  if [[ ! -f "$archive" ]]; then
+    if [[ -f "$cache_dir/$asset" ]]; then
+      mv -- "$cache_dir/$asset" "$archive"
+    else
+      printf 'cue archive not found after download: %s\n' "$archive" >&2
+      return 1
+    fi
+  fi
+
+  tar -xzf "$archive" -C "$tmp"
+
+  cue_bin="$(
+    find "$tmp" -type f -name cue -perm -u+x |
+      head -n 1
+  )"
+
+  if [[ -z "$cue_bin" ]]; then
+    printf 'cue binary not found after extraction\n' >&2
+    return 1
+  fi
+
+  install -m 0755 -- "$cue_bin" "$install_dir/bin/cue"
+  ln -sfn -- "$install_dir/bin/cue" "$tool_path_home/cue"
+
+  "$tool_path_home/cue" version | grep -q "cue version $version"
+
+  mkdir -p "$(dirname -- "$receipt")"
+  printf 'cue\t%s\t%s\t%s\n' "$version" "$install_dir/bin/cue" "$asset" >> "$receipt"
+}
+
+bootstrap_install_cue
