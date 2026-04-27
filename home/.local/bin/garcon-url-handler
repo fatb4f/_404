@@ -1,3 +1,0 @@
-#!/bin/sh
-ln -sf /run/host/dev/.container_token /dev/.container_token 2>/dev/null || true
-exec /run/host/opt/google/cros-containers/bin/garcon --client --url "$@"

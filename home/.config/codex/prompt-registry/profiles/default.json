@@ -1,5 +1,0 @@
-{
-  "name": "default",
-  "workflow_preferences": ["workflow.contract_first"],
-  "snippet_order": ["planning", "validation", "evidence"]
-}
