@@ -4,33 +4,50 @@ set -euo pipefail
 RAW=${ARCH_USB_RAW:-/tmp/arch-usb.raw}
 TARGET=${ARCH_USB_FLASH_TARGET:-}
 FINAL_SIZE=${ARCH_USB_FINAL_SIZE:-13G}
-ROOTFS_SRC=${ARCH_USB_ROOTFS_TAR_ZST:-${ARCH_USB_ROOTFS_TAR:-}}
+ROOTFS_SRC=${ARCH_USB_ROOTFS_IMG_ZST:-${ARCH_USB_ROOTFS_IMG:-}}
 SUBMARINE_URL=${ARCH_USB_SUBMARINE_URL:-https://nightly.link/FyraLabs/submarine/workflows/build/main/submarine-x86_64.zip}
 SUBMARINE_ZIP=${ARCH_USB_SUBMARINE_ZIP:-/tmp/submarine-x86_64.zip}
 SUBMARINE_KPART=${ARCH_USB_SUBMARINE_KPART:-}
 MNT=""
+SRC_MNT=""
 LOOP_DEV=""
+SRC_IMG=""
 
 cleanup() {
   set +e
   for path in \
+    "${SRC_MNT:-}/dev/pts" \
+    "${SRC_MNT:-}/dev" \
+    "${SRC_MNT:-}/proc" \
+    "${SRC_MNT:-}/sys" \
+    "${SRC_MNT:-}/run" \
     "${MNT:-}/dev/pts" \
     "${MNT:-}/dev" \
     "${MNT:-}/proc" \
     "${MNT:-}/sys" \
     "${MNT:-}/run" \
-    "${MNT:-}/etc/resolv.conf"
+    "${SRC_MNT:-}" \
+    "${MNT:-}" \
+    "${SRC_IMG:-}"
   do
+    if [[ -n "${SRC_MNT:-}" && -e "$path" ]]; then
+      umount -R "$path" 2>/dev/null || umount "$path" 2>/dev/null || true
+    fi
     if [[ -n "${MNT:-}" && -e "$path" ]]; then
       umount -R "$path" 2>/dev/null || umount "$path" 2>/dev/null || true
     fi
   done
+  if [[ -n "${SRC_MNT:-}" ]]; then
+    rmdir "$SRC_MNT" 2>/dev/null || true
+  fi
   if [[ -n "${MNT:-}" ]]; then
-    umount "$MNT" 2>/dev/null || true
     rmdir "$MNT" 2>/dev/null || true
   fi
   if [[ -n "${LOOP_DEV:-}" ]]; then
     losetup -d "$LOOP_DEV" 2>/dev/null || true
+  fi
+  if [[ -n "${SRC_IMG:-}" ]]; then
+    rm -f "$SRC_IMG"
   fi
 }
 trap cleanup EXIT
@@ -46,12 +63,12 @@ need_cmd() {
   }
 }
 
-for cmd in bash dd losetup mkfs.ext4 mount qemu-img sgdisk tar udevadm zstd cgpt blkid; do
+for cmd in bash dd losetup mkfs.ext4 mount qemu-img sgdisk rsync udevadm zstd cgpt blkid; do
   need_cmd "$cmd"
 done
 
 if [[ -z "$ROOTFS_SRC" ]]; then
-  echo "missing rootfs artifact path; set ARCH_USB_ROOTFS_TAR or ARCH_USB_ROOTFS_TAR_ZST" >&2
+  echo "missing rootfs artifact path; set ARCH_USB_ROOTFS_IMG or ARCH_USB_ROOTFS_IMG_ZST" >&2
   exit 1
 fi
 
@@ -81,7 +98,17 @@ download_submarine() {
   fi
 }
 
+prepare_rootfs_source() {
+  if [[ "$ROOTFS_SRC" == *.zst ]]; then
+    SRC_IMG="$(mktemp /tmp/arch-rootfs-src.XXXXXX.img)"
+    zstd -dc "$ROOTFS_SRC" > "$SRC_IMG"
+  else
+    SRC_IMG="$ROOTFS_SRC"
+  fi
+}
+
 download_submarine
+prepare_rootfs_source
 
 mkdir -p "$(dirname "$RAW")"
 rm -f "$RAW"
@@ -108,14 +135,12 @@ if [[ -z "$root_uuid" ]]; then
   exit 1
 fi
 
+SRC_MNT="$(mktemp -d /tmp/arch-rootfs-src.XXXXXX)"
 MNT="$(mktemp -d /tmp/arch-usb.XXXXXX)"
+mount -o ro,loop "$SRC_IMG" "$SRC_MNT"
 mount "${LOOP_DEV}p2" "$MNT"
 
-if [[ "$ROOTFS_SRC" == *.zst ]]; then
-  zstd -dc "$ROOTFS_SRC" | tar --numeric-owner --xattrs --acls -C "$MNT" -xpf -
-else
-  tar --numeric-owner --xattrs --acls -C "$MNT" -xpf "$ROOTFS_SRC"
-fi
+rsync -aHAX --numeric-ids "$SRC_MNT"/ "$MNT"/
 
 mkdir -p "$MNT/boot/grub"
 mkdir -p "$MNT/etc/pacman.d"
@@ -169,6 +194,7 @@ chroot "$MNT" /usr/bin/env bash -lc '
 
 sync
 umount -R "$MNT" 2>/dev/null || true
+umount -R "$SRC_MNT" 2>/dev/null || true
 
 dd if="$SUBMARINE_KPART" of="${LOOP_DEV}p1" bs=4M conv=fsync status=progress
 sync
@@ -177,6 +203,10 @@ losetup -d "$LOOP_DEV"
 LOOP_DEV=""
 rmdir "$MNT" 2>/dev/null || true
 MNT=""
+rmdir "$SRC_MNT" 2>/dev/null || true
+SRC_MNT=""
+rm -f "$SRC_IMG" 2>/dev/null || true
+SRC_IMG=""
 
 if [[ -n "$TARGET" ]]; then
   if [[ ! -b "$TARGET" ]]; then

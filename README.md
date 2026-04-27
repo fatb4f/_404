@@ -136,6 +136,6 @@ The next high-signal work is to harden the GitHub release installer:
 3. add a `bare-git` dotfile backend beside the current `yadm` backend
 
 The `arch-usb` workflow now assembles a Submarine-shaped external disk image
-from a cached `arch-rootfs` artifact and the `submarine-x86.kpart` payload.
-The shipped image uses an ext4 root partition, and the rootfs stage is built
-separately before image assembly.
+from a cached `arch-rootfs.ext4` artifact and the `submarine-x86.kpart`
+payload. The rootfs stage is built separately before image assembly, and the
+final image uses an ext4 root partition.

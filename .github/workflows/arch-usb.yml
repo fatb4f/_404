@@ -13,35 +13,35 @@ jobs:
         id: rootfs-cache
         uses: actions/cache/restore@v4
         with:
-          path: ${{ runner.temp }}/arch-rootfs.tar.zst
-          key: arch-rootfs-${{ runner.os }}-${{ hashFiles('scripts/build-rootfs.sh') }}
+          path: ${{ runner.temp }}/arch-rootfs.ext4.zst
+          key: arch-rootfs-ext4-${{ runner.os }}-${{ hashFiles('scripts/build-rootfs.sh') }}
 
       - name: Install build dependencies
         if: steps.rootfs-cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y zstd
+          sudo apt-get install -y e2fsprogs zstd
 
       - name: Build rootfs artifact
         if: steps.rootfs-cache.outputs.cache-hit != 'true'
         run: |
-          ARCH_ROOTFS_TAR="$RUNNER_TEMP/arch-rootfs.tar" \
-          ARCH_ROOTFS_TAR_ZST="$RUNNER_TEMP/arch-rootfs.tar.zst" \
+          ARCH_ROOTFS_IMG="$RUNNER_TEMP/arch-rootfs.ext4" \
+          ARCH_ROOTFS_IMG_ZST="$RUNNER_TEMP/arch-rootfs.ext4.zst" \
             bash ./scripts/build-rootfs.sh
 
       - name: Save rootfs cache
         if: steps.rootfs-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{ runner.temp }}/arch-rootfs.tar.zst
-          key: arch-rootfs-${{ runner.os }}-${{ hashFiles('scripts/build-rootfs.sh') }}
+          path: ${{ runner.temp }}/arch-rootfs.ext4.zst
+          key: arch-rootfs-ext4-${{ runner.os }}-${{ hashFiles('scripts/build-rootfs.sh') }}
 
       - name: Upload rootfs artifact
         uses: actions/upload-artifact@v4
         with:
           name: arch-rootfs
           path: |
-            ${{ runner.temp }}/arch-rootfs.tar.zst
+            ${{ runner.temp }}/arch-rootfs.ext4.zst
           if-no-files-found: error
 
   build-image:
@@ -53,7 +53,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl unzip qemu-utils gdisk e2fsprogs cgpt zstd
+          sudo apt-get install -y curl unzip qemu-utils gdisk e2fsprogs cgpt rsync zstd
 
       - name: Download rootfs artifact
         uses: actions/download-artifact@v4
@@ -64,7 +64,7 @@ jobs:
       - name: Build arch USB image
         run: |
           ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
-          ARCH_USB_ROOTFS_TAR_ZST="$RUNNER_TEMP/rootfs/arch-rootfs.tar.zst" \
+          ARCH_USB_ROOTFS_IMG_ZST="$RUNNER_TEMP/rootfs/arch-rootfs.ext4.zst" \
             bash ./scripts/build-arch-usb.sh
 
       - name: Upload image artifact
