@@ -36,8 +36,6 @@ kind_for_path() {
 
   if [[ -L "$path" ]]; then
     printf 'symlink\n'
-  elif [[ -d "$path" ]]; then
-    printf 'dir\n'
   elif [[ -f "$path" ]]; then
     printf 'file\n'
   else
@@ -45,12 +43,7 @@ kind_for_path() {
   fi
 }
 
-is_generated_candidate() {
-  printf '%s\n' "$1" |
-    grep -Eq '(/cache/|/state/|/sessions?/|/shada|/swap/|/undo/|/lazy-lock\.json$|\.log$|\.tmp$|\.bak$|\.old$|receipt.*\.json$|.*-receipt\.json$)'
-}
-
-has_identity_hit() {
+is_identity_hit() {
   local path="$1"
 
   [[ -f "$path" ]] || return 1
@@ -105,7 +98,7 @@ for target in "${targets[@]}"; do
   abs="$HOME/$target"
   [[ -e "$abs" ]] || continue
 
-  find "$abs" -mindepth 1 \( -type f -o -type l -o -type d \) 2>/dev/null |
+  find "$abs" -mindepth 1 \( -type f -o -type l \) 2>/dev/null |
     sort |
     while IFS= read -r path; do
       rel="${path#"$HOME"/}"
@@ -118,23 +111,10 @@ for target in "${targets[@]}"; do
         tracked=false
       fi
 
-      status_line="$(yadm status --porcelain=v1 --untracked-files=all -- "$rel" | head -n 1 || true)"
-      if [[ -n "$status_line" ]]; then
-        yadm_status="${status_line:0:2}"
-      else
-        yadm_status=""
-      fi
-
-      if has_identity_hit "$path"; then
+      if is_identity_hit "$path"; then
         identity_hit=true
       else
         identity_hit=false
-      fi
-
-      if is_generated_candidate "$rel"; then
-        generated_candidate=true
-      else
-        generated_candidate=false
       fi
 
       IFS=$'\t' read -r syntax_checked syntax_ok syntax_tool < <(syntax_probe "$path" "$kind")
@@ -144,64 +124,53 @@ for target in "${targets[@]}"; do
         --arg family "$family" \
         --arg kind "$kind" \
         --argjson tracked "$tracked" \
-        --arg yadm_status "$yadm_status" \
         --argjson identity_hit "$identity_hit" \
-        --argjson generated_candidate "$generated_candidate" \
         --argjson syntax_checked "$syntax_checked" \
         --argjson syntax_ok "$syntax_ok" \
-        --arg syntax_tool "$syntax_tool" '
-        {
+        --arg syntax_tool "$syntax_tool" \
+        '{
           path: $path,
           family: $family,
           kind: $kind,
           tracked: $tracked,
-          yadm_status: (if $yadm_status == "" then null else $yadm_status end),
           identity_hit: $identity_hit,
-          generated_candidate: $generated_candidate,
           syntax: {
             checked: $syntax_checked,
             ok: $syntax_ok,
             tool: (if $syntax_tool == "null" then null else $syntax_tool end)
           }
-        }
-        |
-        .bucket =
-          if .syntax.checked == true and .syntax.ok == false then
-            "broken-syntax"
-          elif .tracked == true and .identity_hit == true then
-            "tracked-identity-path"
-          elif .tracked == true and .generated_candidate == true then
-            "tracked-generated-state"
-          elif .tracked == true then
-            "tracked-clean"
-          elif .generated_candidate == true then
-            "untracked-generated-state"
-          else
-            "untracked-real-config"
-          end
-        ' >> "$records"
+        }' >> "$records"
     done
 done
 
-jq -s \
-  --arg home "$HOME" \
-  --argjson targets "$(printf '%s\n' "${targets[@]}" | jq -R . | jq -s .)" \
-  '{
-    schema: "dotfiles.audit.v0",
-    mode: "inventory-only",
-    home: $home,
-    targets: $targets,
-    records: .
-  }' "$records" > "$audit/audit.json"
+jq -s '
+  def obs: {path, kind, family};
+  def mapify(stream):
+    reduce stream[] as $r ({}; .[$r.path] = $r);
+
+  {
+    schema: "dotfiles.audit.v1",
+    mode: "allowlist",
+    observed: {
+      live_files: mapify([.[] | obs]),
+      yadm_tracked: mapify([.[] | select(.tracked == true) | obs]),
+      identity_hits: mapify([.[] | select(.identity_hit == true) | {path, kind, family}]),
+      syntax_failures: mapify([.[] | select(.syntax.checked == true and .syntax.ok == false) | {path, kind, family, syntax}])
+    }
+  }
+' "$records" > "$audit/audit.json"
 
 cue vet "$HOME/.config/dotfiles-audit/policy/dotfiles_audit.cue" "$audit/audit.json" -d '#Audit'
 
 jq -r '
-  .records
-  | group_by(.bucket)
-  | map({bucket: .[0].bucket, count: length})
+  [
+    ["live_files", (.observed.live_files | length)],
+    ["yadm_tracked", (.observed.yadm_tracked | length)],
+    ["identity_hits", (.observed.identity_hits | length)],
+    ["syntax_failures", (.observed.syntax_failures | length)]
+  ]
   | .[]
-  | "\(.bucket)\t\(.count)"
-' "$audit/audit.json" | sort
+  | "\(.[0])\t\(.[1])"
+' "$audit/audit.json"
 
 printf 'audit=%s\n' "$audit"
