@@ -1,77 +1,95 @@
-legacy_home="/home/_404"
+# shellcheck shell=bash
+# Source-only shell environment loader for bash/zsh.
+# Owns loading mechanics and helper primitives only.
+# Env declarations belong in env.d/*.sh.
 
-unset_legacy_var() {
-  local name="$1"
-  local value
+: "${HOME:?HOME is required}"
 
-  eval "value=\${$name-}"
-  case "$value" in
-    "$legacy_home"|"$legacy_home"/*)
-      unset "$name"
-      ;;
+env_name_valid() {
+  case "${1-}" in
+    ''|*[!A-Za-z0-9_]*|[0-9]*) return 1 ;;
+    *) return 0 ;;
   esac
 }
 
-strip_legacy_path() {
-  local segment
-  local new_path=""
-  local old_ifs="$IFS"
+env_export() {
+  local name="${1-}"
+  local value="${2-}"
 
-  IFS=:
-  for segment in ${PATH-}; do
-    case "$segment" in
-      ""|"${legacy_home}"|"${legacy_home}"/*)
-        continue
-        ;;
-    esac
-    new_path="${new_path:+$new_path:}$segment"
-  done
-  IFS="$old_ifs"
+  env_name_valid "$name" || return 2
 
-  PATH="$new_path"
+  export "$name=$value"
+}
+
+env_export_dir() {
+  local name="${1-}"
+  local target="${2-}"
+
+  env_name_valid "$name" || return 2
+  [ -n "$target" ] || return 2
+
+  target="${target%/}"
+  [ -n "$target" ] || target="/"
+
+  mkdir -p "$target" || return 1
+  env_export "$name" "$target"
+}
+
+env_export_file() {
+  local name="${1-}"
+  local target="${2-}"
+  local parent
+
+  env_name_valid "$name" || return 2
+  [ -n "$target" ] || return 2
+
+  parent="${target%/*}"
+  [ "$parent" = "$target" ] && parent="."
+
+  mkdir -p "$parent" || return 1
+  env_export "$name" "$target"
+}
+
+path_prepend() {
+  local entry="${1-}"
+
+  [ -n "$entry" ] || return 0
+
+  case ":${PATH-}:" in
+    *":$entry:"*) ;;
+    *) PATH="$entry${PATH:+:$PATH}" ;;
+  esac
+
   export PATH
 }
 
-for var in \
-  XDG_CACHE_HOME \
-  XDG_CONFIG_HOME \
-  XDG_DATA_HOME \
-  XDG_DATA_BIN \
-  XDG_STATE_HOME \
-  XDG_CONFIG_DIRS \
-  XDG_DATA_DIRS \
-  ANDROID_USER_HOME \
-  LESSHISTFILE \
-  ZSH_CACHE_DIR \
-  PIP_CACHE_DIR \
-  PYTHONPYCACHEPREFIX \
-  PYTEST_ADDOPTS \
-  RUFF_CACHE_DIR \
-  UV_CACHE_DIR \
-  CARGO_HOME \
-  RUSTUP_HOME \
-  HISTFILE \
-  EDITOR \
-  VISUAL \
-  GNUPGHOME \
-  PASSWORD_STORE_DIR \
-  PRJROOT \
-  CODEX_HOME \
-  CODEX_STATE \
-  KITTY_CACHE_DIRECTORY \
-  DIR_BOOTSTRAP
-do
-  unset_legacy_var "$var"
-done
+path_prepend_dir() {
+  local entry="${1-}"
 
-strip_legacy_path
+  [ -n "$entry" ] || return 0
 
-xdg_config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
-xdg_config_home="${xdg_config_home%/}"
-env_dir="$xdg_config_home/shell/env.d"
-for f in "$env_dir"/*.sh; do
-  [ -r "$f" ] || continue
-  . "$f"
-done
+  mkdir -p "$entry" || return 1
+  path_prepend "$entry"
+}
 
-unset env_dir f xdg_config_home
+shell_env_load() {
+  local env_dir
+  local env_file
+
+  env_dir="${SHELL_ENV_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/shell/env.d}"
+
+  [ -d "$env_dir" ] || return 0
+
+  if [ -n "${ZSH_VERSION-}" ]; then
+    setopt LOCAL_OPTIONS NULL_GLOB
+  fi
+
+  for env_file in "$env_dir"/*.sh; do
+    [ -f "$env_file" ] || continue
+
+    # shellcheck source=/dev/null
+    . "$env_file" || return
+  done
+}
+
+shell_env_load "$@"

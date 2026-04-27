@@ -1,11 +1,12 @@
-path_prepend() {
-  case ":$PATH:" in
-    *":$1:"*) ;;
-    *) PATH="$1${PATH:+:$PATH}" ;;
-  esac
-}
+# shellcheck shell=sh
 
-path_prepend "${_404_TOOL_PATH:-${XDG_DATA_HOME:-$HOME/.local/share}/_404/path}"
-path_prepend "$HOME/.local/bin"
+: "${HOME:?HOME is required}"
+: "${XDG_DATA_HOME:?XDG_DATA_HOME must be set before 20-paths.sh}"
 
-export PATH
+XDG_DATA_BIN="${XDG_DATA_BIN:-$HOME/.local/bin}"
+TOOL_PATH_HOME="${TOOL_PATH_HOME:-$XDG_DATA_HOME/path}"
+
+export XDG_DATA_BIN TOOL_PATH_HOME
+
+path_prepend_dir "$TOOL_PATH_HOME"
+path_prepend_dir "$XDG_DATA_BIN"
