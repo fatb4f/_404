@@ -51,8 +51,8 @@ sudo docker run --rm \
   archlinux:latest \
   /work/build-rootfs-in-docker.sh
 
-tar --numeric-owner --xattrs --acls -C "$ROOTFS_DIR" -cpf "$ROOTFS_TAR" .
-zstd -19 -T0 -f "$ROOTFS_TAR" -o "$ROOTFS_TAR_ZST"
-rm -f "$ROOTFS_TAR"
+sudo tar --numeric-owner --xattrs --acls -C "$ROOTFS_DIR" -cpf "$ROOTFS_TAR" .
+sudo zstd -19 -T0 -f "$ROOTFS_TAR" -o "$ROOTFS_TAR_ZST"
+sudo rm -f "$ROOTFS_TAR"
 
 echo "Rootfs artifacts written to $OUTDIR"
