@@ -60,3 +60,19 @@ xdg_config_home() {
   local config_home=${XDG_CONFIG_HOME:-$home_dir/.config}
   printf '%s\n' "${config_home%/}"
 }
+
+bootstrap_require_env() {
+  local name
+  for name in "$@"; do
+    if [[ -z "${!name-}" ]]; then
+      die "missing required bootstrap env: $name"
+    fi
+  done
+}
+
+bootstrap_mkdirs() {
+  local dir
+  for dir in "$@"; do
+    ensure_dir "$dir"
+  done
+}
