@@ -24,9 +24,11 @@ if [[ -r "$HOME/.config/shell/load-env.sh" ]]; then
   . "$HOME/.config/shell/load-env.sh"
 fi
 
-if command -v just >/dev/null 2>&1; then
+if command -v dotctl >/dev/null 2>&1; then
+  dotctl check
+elif command -v just >/dev/null 2>&1; then
   just check
 else
-  printf 'warning: just not found after bootstrap\n' >&2
+  printf 'warning: no controller found after bootstrap\n' >&2
   exit 1
 fi
