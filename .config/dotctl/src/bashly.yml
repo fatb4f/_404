@@ -4,7 +4,27 @@ version: 0.1.0
 
 commands:
   - name: audit
-    help: Run the strict CUE-backed dotfiles audit
+    help: Dotfiles audit adapter commands
+    commands:
+      - name: observe
+        help: Emit dotfiles audit JSON
+        args:
+          - name: targets
+            repeatable: true
+            help: Managed roots to observe
+
+      - name: vet
+        help: Vet a dotfiles audit JSON snapshot
+        args:
+          - name: audit_json
+            required: true
+
+      - name: run
+        help: Observe and vet dotfiles audit in one command
+        args:
+          - name: targets
+            repeatable: true
+            help: Managed roots to observe
 
   - name: check
     help: Run shell, bootstrap, audit, and yadm checks

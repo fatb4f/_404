@@ -20,7 +20,7 @@ bootstrap:
     dotctl bootstrap
 
 audit:
-    dotctl audit
+    dotctl audit run
 
 provision:
     dotctl provision

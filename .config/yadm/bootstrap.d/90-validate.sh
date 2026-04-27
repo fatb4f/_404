@@ -13,7 +13,7 @@ bootstrap_validate_final_state() {
     return 1
   fi
 
-  "$TOOL_PATH_HOME/dotctl" audit
+  "$TOOL_PATH_HOME/dotctl" audit run
 }
 
 bootstrap_validate_final_state
