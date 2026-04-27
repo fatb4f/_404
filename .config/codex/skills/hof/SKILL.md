@@ -7,7 +7,7 @@ description: Use this skill when the task is to drive a bounded `hof` workflow f
 
 ## Purpose
 
-Use this skill for the narrow `hof`-based spec-to-python workflow recovered under `/home/_404/.local/opt/knowledge/10-areas/local.stack/runtime/skill-spec-python`.
+Use this skill for the narrow `hof`-based spec-to-python workflow recovered under `/home/x404/.local/opt/knowledge/10-areas/local.stack/runtime/skill-spec-python`.
 
 `hof` is not the semantic authority. It is the bounded task runner and projection engine over contracts that already exist.
 
@@ -17,7 +17,7 @@ Use this skill for the narrow `hof`-based spec-to-python workflow recovered unde
 - the workflow is rooted in `tasks/flow.cue`
 - the user wants deterministic generation from CUE/spec inputs
 - the job is to emit Python or schemas from a skill-local task graph
-- the user is working inside `/home/_404/.local/opt/knowledge/10-areas/local.stack/runtime/skill-spec-python`
+- the user is working inside `/home/x404/.local/opt/knowledge/10-areas/local.stack/runtime/skill-spec-python`
 
 ## Do Not Use This Skill For
 
@@ -30,7 +30,7 @@ Use this skill for the narrow `hof`-based spec-to-python workflow recovered unde
 
 Primary recovered workspace:
 
-- `/home/_404/.local/opt/knowledge/10-areas/local.stack/runtime/skill-spec-python`
+- `/home/x404/.local/opt/knowledge/10-areas/local.stack/runtime/skill-spec-python`
 
 High-signal files:
 

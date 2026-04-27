@@ -15,7 +15,7 @@ Meta-skill for routing and controlling bounded-batch lifecycle loops.
 ## Worktree contract
 
 - `$wt` is the git-flow integration worktree for the source repo under execution.
-- `$ledger_wt` is a separate Git worktree of the loop ledger repo at `/home/_404/src/loop_ledger`.
+- `$ledger_wt` is a separate Git worktree of the loop ledger repo at `/home/x404/src/loop_ledger`.
 - `PLAN` and `IMPLEMENT` packets are produced under `$wt/{PLAN,IMPLEMENT}` unless a project-specific contract says otherwise.
 - Review manifests, copied evidence, and shareable review bundles are materialized through `$ledger_wt`.
 - Do not overload `$wt` to mean the ledger surface. The two paths have different roles and must stay explicit.

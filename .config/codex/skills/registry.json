@@ -1,7 +1,7 @@
 {
   "kind": "skills.registry.v1",
   "generated_at_utc": "2026-03-10T05:25:57Z",
-  "skills_root": "/home/_404/src/dotfiles/config/codex/skills",
+  "skills_root": "/home/x404/src/dotfiles/config/codex/skills",
   "skills": [
     {
       "skill_id": "daily-reports",

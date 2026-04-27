@@ -1,12 +1,12 @@
 # Worker Packets
 
 Canonical packet authority:
-- `/home/_404/src/worker_packets`
+- `/home/x404/src/worker_packets`
 
 Important subpaths:
-- contracts: `/home/_404/src/worker_packets/contracts`
-- fixtures: `/home/_404/src/worker_packets/fixtures`
-- instances: `/home/_404/src/worker_packets/instances`
+- contracts: `/home/x404/src/worker_packets/contracts`
+- fixtures: `/home/x404/src/worker_packets/fixtures`
+- instances: `/home/x404/src/worker_packets/instances`
 
 Use this repo for:
 - worker request/result/review/decision schemas
