@@ -15,6 +15,46 @@ package dotctl
       dependsOn: []
       severity: "degraded"
     }
+    "host.loginctl": #DoctorService & {
+      dependsOn: []
+      severity: "degraded"
+    }
+    "host.xdg-runtime": #DoctorService & {
+      dependsOn: []
+      severity: "critical"
+    }
+    "display.env": #DoctorService & {
+      dependsOn: []
+      severity: "warning"
+    }
+    "display.wayland": #DoctorService & {
+      dependsOn: ["host.xdg-runtime", "display.env"]
+      severity: "warning"
+    }
+    "display.x11": #DoctorService & {
+      dependsOn: ["display.env"]
+      severity: "warning"
+    }
+    "network.link": #DoctorService & {
+      dependsOn: []
+      severity: "degraded"
+    }
+    "network.route": #DoctorService & {
+      dependsOn: ["network.link"]
+      severity: "critical"
+    }
+    "network.dns": #DoctorService & {
+      dependsOn: ["network.route"]
+      severity: "critical"
+    }
+    "service.dbus-session": #DoctorService & {
+      dependsOn: ["host.xdg-runtime"]
+      severity: "degraded"
+    }
+    "service.systemd-user": #DoctorService & {
+      dependsOn: ["host.loginctl"]
+      severity: "degraded"
+    }
     "shell.env": #DoctorService & {
       dependsOn: []
       severity: "critical"
