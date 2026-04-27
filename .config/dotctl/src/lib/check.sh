@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/audit.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/git.sh"
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/yadm.sh"
 
 dotctl_check_shell() {
@@ -20,6 +21,7 @@ dotctl_check_bootstrap() {
 dotctl_check_all() {
   dotctl_check_shell
   dotctl_check_bootstrap
+  dotctl_git_refresh
   dotctl_audit_run
   dotctl_yadm_status
 }

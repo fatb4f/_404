@@ -51,13 +51,21 @@ lib_obs() {
 
 syntax_failures_json='{}'
 syntax_paths=(
-  "$root/src/audit_command.sh"
+  "$root/src/audit_observe_command.sh"
+  "$root/src/audit_vet_command.sh"
+  "$root/src/audit_run_command.sh"
+  "$root/src/git_observe_command.sh"
+  "$root/src/git_vet_command.sh"
+  "$root/src/git_project_state_command.sh"
+  "$root/src/git_refresh_command.sh"
+  "$root/src/git_status_command.sh"
   "$root/src/check_command.sh"
   "$root/src/status_command.sh"
   "$root/src/bootstrap_command.sh"
   "$root/src/provision_command.sh"
   "$root/src/lib/env.sh"
   "$root/src/lib/audit.sh"
+  "$root/src/lib/git.sh"
   "$root/src/lib/check.sh"
   "$root/src/lib/yadm.sh"
 )
@@ -74,7 +82,14 @@ for path in "${syntax_paths[@]}"; do
   fi
 done
 
-audit_cmd="$(command_obs "$root/src/audit_command.sh" "$(relpath "$root/src/audit_command.sh")")"
+audit_observe_cmd="$(command_obs "$root/src/audit_observe_command.sh" "$(relpath "$root/src/audit_observe_command.sh")")"
+audit_vet_cmd="$(command_obs "$root/src/audit_vet_command.sh" "$(relpath "$root/src/audit_vet_command.sh")")"
+audit_run_cmd="$(command_obs "$root/src/audit_run_command.sh" "$(relpath "$root/src/audit_run_command.sh")")"
+git_observe_cmd="$(command_obs "$root/src/git_observe_command.sh" "$(relpath "$root/src/git_observe_command.sh")")"
+git_vet_cmd="$(command_obs "$root/src/git_vet_command.sh" "$(relpath "$root/src/git_vet_command.sh")")"
+git_project_state_cmd="$(command_obs "$root/src/git_project_state_command.sh" "$(relpath "$root/src/git_project_state_command.sh")")"
+git_refresh_cmd="$(command_obs "$root/src/git_refresh_command.sh" "$(relpath "$root/src/git_refresh_command.sh")")"
+git_status_cmd="$(command_obs "$root/src/git_status_command.sh" "$(relpath "$root/src/git_status_command.sh")")"
 check_cmd="$(command_obs "$root/src/check_command.sh" "$(relpath "$root/src/check_command.sh")")"
 status_cmd="$(command_obs "$root/src/status_command.sh" "$(relpath "$root/src/status_command.sh")")"
 bootstrap_cmd="$(command_obs "$root/src/bootstrap_command.sh" "$(relpath "$root/src/bootstrap_command.sh")")"
@@ -82,6 +97,7 @@ provision_cmd="$(command_obs "$root/src/provision_command.sh" "$(relpath "$root/
 
 env_lib="$(lib_obs "$root/src/lib/env.sh" "$(relpath "$root/src/lib/env.sh")")"
 audit_lib="$(lib_obs "$root/src/lib/audit.sh" "$(relpath "$root/src/lib/audit.sh")")"
+git_lib="$(lib_obs "$root/src/lib/git.sh" "$(relpath "$root/src/lib/git.sh")")"
 check_lib="$(lib_obs "$root/src/lib/check.sh" "$(relpath "$root/src/lib/check.sh")")"
 yadm_lib="$(lib_obs "$root/src/lib/yadm.sh" "$(relpath "$root/src/lib/yadm.sh")")"
 
@@ -93,18 +109,26 @@ generated_bin_dotctl=false
 jq -n \
   --arg schema "dotctl.substrate.observed.v0" \
   --argjson commands "$(jq -n \
-    --argjson audit "$audit_cmd" \
+    --argjson audit_observe "$audit_observe_cmd" \
+    --argjson audit_vet "$audit_vet_cmd" \
+    --argjson audit_run "$audit_run_cmd" \
+    --argjson git_observe "$git_observe_cmd" \
+    --argjson git_vet "$git_vet_cmd" \
+    --argjson git_project_state "$git_project_state_cmd" \
+    --argjson git_refresh "$git_refresh_cmd" \
+    --argjson git_status "$git_status_cmd" \
     --argjson check "$check_cmd" \
     --argjson status "$status_cmd" \
     --argjson bootstrap "$bootstrap_cmd" \
     --argjson provision "$provision_cmd" \
-    '{audit:$audit,check:$check,status:$status,bootstrap:$bootstrap,provision:$provision}')" \
+    '{audit:{observe:$audit_observe,vet:$audit_vet,run:$audit_run},git:{observe:$git_observe,vet:$git_vet,project_state:$git_project_state,refresh:$git_refresh,status:$git_status},check:$check,status:$status,bootstrap:$bootstrap,provision:$provision}')" \
   --argjson libs "$(jq -n \
     --argjson env "$env_lib" \
     --argjson audit "$audit_lib" \
+    --argjson git "$git_lib" \
     --argjson check "$check_lib" \
     --argjson yadm "$yadm_lib" \
-    '{env:$env,audit:$audit,check:$check,yadm:$yadm}')" \
+    '{env:$env,audit:$audit,git:$git,check:$check,yadm:$yadm}')" \
   --argjson generated "$(jq -n \
     --argjson dotctl "$generated_dotctl" \
     --argjson bin_dotctl "$generated_bin_dotctl" \

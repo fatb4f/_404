@@ -16,11 +16,57 @@ package dotctl
   schema: "dotctl.substrate.observed.v0"
 
   commands: {
-    audit: #Command & {
-      path:      ".config/dotctl/src/audit_command.sh"
-      exists:    true
-      thin:      true
-      line_count: <=6
+    audit: {
+      observe: #Command & {
+        path:      ".config/dotctl/src/audit_observe_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+      vet: #Command & {
+        path:      ".config/dotctl/src/audit_vet_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+      run: #Command & {
+        path:      ".config/dotctl/src/audit_run_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+    }
+    git: {
+      observe: #Command & {
+        path:      ".config/dotctl/src/git_observe_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+      vet: #Command & {
+        path:      ".config/dotctl/src/git_vet_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+      project_state: #Command & {
+        path:      ".config/dotctl/src/git_project_state_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+      refresh: #Command & {
+        path:      ".config/dotctl/src/git_refresh_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
+      status: #Command & {
+        path:      ".config/dotctl/src/git_status_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
     }
     check: #Command & {
       path:      ".config/dotctl/src/check_command.sh"
@@ -51,6 +97,10 @@ package dotctl
     }
     audit: #Lib & {
       path:   ".config/dotctl/src/lib/audit.sh"
+      exists: true
+    }
+    git: #Lib & {
+      path:   ".config/dotctl/src/lib/git.sh"
       exists: true
     }
     check: #Lib & {

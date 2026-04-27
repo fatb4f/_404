@@ -26,6 +26,39 @@ commands:
             repeatable: true
             help: Managed roots to observe
 
+  - name: git
+    help: Git substrate adapter commands
+    commands:
+      - name: observe
+        help: Emit normalized Git substrate JSON
+        filename: git_observe_command.sh
+
+      - name: vet
+        help: Vet a Git substrate JSON snapshot
+        filename: git_vet_command.sh
+        flags:
+          - long: --input
+            arg: file
+            required: true
+            help: Git substrate snapshot to vet
+
+      - name: project-state
+        help: Project vetted Git substrate state into XDG directories
+        filename: git_project_state_command.sh
+        flags:
+          - long: --input
+            arg: file
+            required: true
+            help: Git substrate snapshot to project
+
+      - name: refresh
+        help: Observe, vet, and project Git substrate state
+        filename: git_refresh_command.sh
+
+      - name: status
+        help: Show Git substrate status summary
+        filename: git_status_command.sh
+
   - name: check
     help: Run shell, bootstrap, audit, and yadm checks
 
