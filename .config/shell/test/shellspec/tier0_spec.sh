@@ -1,6 +1,10 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+# shellcheck disable=SC2016
+
 Describe 'tier0 shell env'
-It 'loads under clean bash'
-When run env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/bash \
+  It 'loads under clean bash'
+    When run env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/bash \
 	bash --noprofile --norc -c '. "$HOME/.config/shell/load-env.sh"; printf "%s\n" "$TOOL_PATH_HOME"'
 The status should be success
 The output should not be empty
