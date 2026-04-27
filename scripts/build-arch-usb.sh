@@ -4,12 +4,7 @@ set -euo pipefail
 RAW=${ARCH_USB_RAW:-/tmp/arch-usb.raw}
 TARGET=${ARCH_USB_FLASH_TARGET:-}
 FINAL_SIZE=${ARCH_USB_FINAL_SIZE:-13G}
-ROOTFS_REPO=${ARCH_USB_ROOTFS_REPO:-fatb4f/baguette}
-ROOTFS_WORKFLOW=${ARCH_USB_ROOTFS_WORKFLOW:-build-arch-baguette.yml}
-ROOTFS_ARTIFACT=${ARCH_USB_ROOTFS_ARTIFACT:-arch-rootfs-intermediate}
-ROOTFS_RUN_ID=${ARCH_USB_ROOTFS_RUN_ID:-}
-ROOTFS_TAR=${ARCH_USB_ROOTFS_TAR:-}
-ROOTFS_TAR_ZST=${ARCH_USB_ROOTFS_TAR_ZST:-}
+ROOTFS_SRC=${ARCH_USB_ROOTFS_TAR_ZST:-${ARCH_USB_ROOTFS_TAR:-}}
 SUBMARINE_URL=${ARCH_USB_SUBMARINE_URL:-https://nightly.link/FyraLabs/submarine/workflows/build/main/submarine-x86_64.zip}
 SUBMARINE_ZIP=${ARCH_USB_SUBMARINE_ZIP:-/tmp/submarine-x86_64.zip}
 SUBMARINE_KPART=${ARCH_USB_SUBMARINE_KPART:-}
@@ -55,53 +50,15 @@ for cmd in bash dd losetup mkfs.ext4 mount qemu-img sgdisk tar udevadm zstd cgpt
   need_cmd "$cmd"
 done
 
-if [[ -z "$ROOTFS_TAR" && -z "$ROOTFS_TAR_ZST" ]]; then
-  need_cmd gh
+if [[ -z "$ROOTFS_SRC" ]]; then
+  echo "missing rootfs artifact path; set ARCH_USB_ROOTFS_TAR or ARCH_USB_ROOTFS_TAR_ZST" >&2
+  exit 1
 fi
 
 if [[ -z "$SUBMARINE_KPART" ]]; then
   need_cmd curl
   need_cmd unzip
 fi
-
-download_rootfs() {
-  local tmpdir run_id
-
-  if [[ -n "$ROOTFS_TAR" && -f "$ROOTFS_TAR" ]]; then
-    return
-  fi
-
-  if [[ -n "$ROOTFS_TAR_ZST" && -f "$ROOTFS_TAR_ZST" ]]; then
-    ROOTFS_TAR="$ROOTFS_TAR_ZST"
-    return
-  fi
-
-  tmpdir="$(mktemp -d /tmp/arch-rootfs.XXXXXX)"
-  if [[ -n "$ROOTFS_RUN_ID" ]]; then
-    run_id="$ROOTFS_RUN_ID"
-  else
-    run_id="$(
-      gh api "repos/$ROOTFS_REPO/actions/workflows/$ROOTFS_WORKFLOW/runs?status=success&branch=main&per_page=1" \
-        --jq '.workflow_runs[0].id'
-    )"
-  fi
-  if [[ -z "$run_id" || "$run_id" == "null" ]]; then
-    echo "could not determine a successful rootfs run id" >&2
-    exit 1
-  fi
-
-  gh run download "$run_id" -R "$ROOTFS_REPO" -n "$ROOTFS_ARTIFACT" -D "$tmpdir"
-
-  if [[ -f "$tmpdir/arch-rootfs.tar" ]]; then
-    ROOTFS_TAR="$tmpdir/arch-rootfs.tar"
-  elif [[ -f "$tmpdir/arch-rootfs.tar.zst" ]]; then
-    ROOTFS_TAR_ZST="$tmpdir/arch-rootfs.tar.zst"
-    ROOTFS_TAR="$ROOTFS_TAR_ZST"
-  else
-    echo "rootfs artifact did not contain arch-rootfs.tar or arch-rootfs.tar.zst" >&2
-    exit 1
-  fi
-}
 
 download_submarine() {
   local tmpdir
@@ -124,44 +81,43 @@ download_submarine() {
   fi
 }
 
-extract_rootfs() {
-  local root_uuid
+download_submarine
 
-  mkdir -p "$(dirname "$RAW")"
-  rm -f "$RAW"
+mkdir -p "$(dirname "$RAW")"
+rm -f "$RAW"
 
-  qemu-img create -f raw "$RAW" "$FINAL_SIZE"
-  sgdisk -o "$RAW"
-  sgdisk -n1:2048:+16M -t1:7F00 -c1:Submarine "$RAW"
-  sgdisk -n2:0:0 -t2:8300 -c2:Arch\ Linux\ root "$RAW"
+qemu-img create -f raw "$RAW" "$FINAL_SIZE"
+sgdisk -o "$RAW"
+sgdisk -n1:2048:+16M -t1:7F00 -c1:Submarine "$RAW"
+sgdisk -n2:0:0 -t2:8300 -c2:Arch\ Linux\ root "$RAW"
 
-  LOOP_DEV="$(losetup --find --show --partscan "$RAW")"
-  udevadm settle
+LOOP_DEV="$(losetup --find --show --partscan "$RAW")"
+udevadm settle
 
-  cgpt add -i 1 -t kernel -P 15 -T 1 -S 1 "$LOOP_DEV"
+cgpt add -i 1 -t kernel -P 15 -T 1 -S 1 "$LOOP_DEV"
 
-  mkfs.ext4 -F -L ARCHROOT "${LOOP_DEV}p2"
-  root_uuid="$(blkid -s UUID -o value "${LOOP_DEV}p2")"
-  if [[ -z "$root_uuid" ]]; then
-    echo "could not determine root filesystem UUID" >&2
-    exit 1
-  fi
+mkfs.ext4 -F -L ARCHROOT "${LOOP_DEV}p2"
+root_uuid="$(blkid -s UUID -o value "${LOOP_DEV}p2")"
+if [[ -z "$root_uuid" ]]; then
+  echo "could not determine root filesystem UUID" >&2
+  exit 1
+fi
 
-  MNT="$(mktemp -d /tmp/arch-usb.XXXXXX)"
-  mount "${LOOP_DEV}p2" "$MNT"
+MNT="$(mktemp -d /tmp/arch-usb.XXXXXX)"
+mount "${LOOP_DEV}p2" "$MNT"
 
-  if [[ "$ROOTFS_TAR" == *.zst ]]; then
-    zstd -dc "$ROOTFS_TAR" | tar --numeric-owner --xattrs --acls -C "$MNT" -xpf -
-  else
-    tar --numeric-owner --xattrs --acls -C "$MNT" -xpf "$ROOTFS_TAR"
-  fi
+if [[ "$ROOTFS_SRC" == *.zst ]]; then
+  zstd -dc "$ROOTFS_SRC" | tar --numeric-owner --xattrs --acls -C "$MNT" -xpf -
+else
+  tar --numeric-owner --xattrs --acls -C "$MNT" -xpf "$ROOTFS_SRC"
+fi
 
-  mkdir -p "$MNT/boot/grub"
-  mkdir -p "$MNT/etc/pacman.d"
-  cat >"$MNT/etc/vconsole.conf" <<'EOF'
+mkdir -p "$MNT/boot/grub"
+mkdir -p "$MNT/etc/pacman.d"
+cat >"$MNT/etc/vconsole.conf" <<'EOF'
 KEYMAP=us
 EOF
-  cat >"$MNT/etc/pacman.conf" <<'EOF'
+cat >"$MNT/etc/pacman.conf" <<'EOF'
 [options]
 HoldPkg     = pacman glibc
 Architecture = auto
@@ -178,49 +134,44 @@ Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch
 [multilib]
 Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch
 EOF
-  cat >"$MNT/etc/fstab" <<EOF
+cat >"$MNT/etc/fstab" <<EOF
 UUID=$root_uuid / ext4 defaults 0 1
 EOF
 
-  for dir in dev dev/pts proc sys run; do
-    mkdir -p "$MNT/$dir"
-  done
-  mount --bind /dev "$MNT/dev"
-  mount --bind /dev/pts "$MNT/dev/pts"
-  mount --bind /proc "$MNT/proc"
-  mount --bind /sys "$MNT/sys"
-  mount --bind /run "$MNT/run"
-  if [[ -f /etc/resolv.conf ]]; then
-    mkdir -p "$MNT/etc"
-    : >"$MNT/etc/resolv.conf"
-    mount --bind /etc/resolv.conf "$MNT/etc/resolv.conf"
-  fi
+for dir in dev dev/pts proc sys run; do
+  mkdir -p "$MNT/$dir"
+done
+mount --bind /dev "$MNT/dev"
+mount --bind /dev/pts "$MNT/dev/pts"
+mount --bind /proc "$MNT/proc"
+mount --bind /sys "$MNT/sys"
+mount --bind /run "$MNT/run"
+if [[ -f /etc/resolv.conf ]]; then
+  mkdir -p "$MNT/etc"
+  : >"$MNT/etc/resolv.conf"
+  mount --bind /etc/resolv.conf "$MNT/etc/resolv.conf"
+fi
 
-  chroot "$MNT" /usr/bin/env bash -lc '
-    set -euo pipefail
-    pacman-key --init
-    pacman-key --populate archlinux
-    pacman -Sy --noconfirm archlinux-keyring
-    pacman -S --noconfirm --needed linux linux-firmware grub
-    mkdir -p /boot/grub
-    grub-mkconfig -o /boot/grub/grub.cfg
-  '
+chroot "$MNT" /usr/bin/env bash -lc '
+  set -euo pipefail
+  pacman-key --init
+  pacman-key --populate archlinux
+  pacman -Sy --noconfirm archlinux-keyring
+  pacman -S --noconfirm --needed mkinitcpio linux linux-firmware grub
+  mkdir -p /boot/grub
+  grub-mkconfig -o /boot/grub/grub.cfg
+'
 
-  sync
-  umount -R "$MNT" 2>/dev/null || true
+sync
+umount -R "$MNT" 2>/dev/null || true
 
-  dd if="$SUBMARINE_KPART" of="${LOOP_DEV}p1" bs=4M conv=fsync status=progress
-  sync
+dd if="$SUBMARINE_KPART" of="${LOOP_DEV}p1" bs=4M conv=fsync status=progress
+sync
 
-  losetup -d "$LOOP_DEV"
-  LOOP_DEV=""
-  rmdir "$MNT" 2>/dev/null || true
-  MNT=""
-}
-
-download_rootfs
-download_submarine
-extract_rootfs
+losetup -d "$LOOP_DEV"
+LOOP_DEV=""
+rmdir "$MNT" 2>/dev/null || true
+MNT=""
 
 if [[ -n "$TARGET" ]]; then
   if [[ ! -b "$TARGET" ]]; then
