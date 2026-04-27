@@ -16,11 +16,11 @@ Scope:
 - Codex-facing policy and orchestration assets
 
 Out of scope:
-- machine-local runtime state under `~/.config/codex`
-- caches
+- machine-local runtime state under `~/.local/share/codex`
+- caches under `~/.cache/codex`
 - auth
 - logs
-- session/state databases
+- session/state databases under `~/.local/state/codex`
 
 Migration note:
 - the extracted tree was rooted from the tracked Codex config and preserves newer resolved changes that had drifted between the old mirrored paths

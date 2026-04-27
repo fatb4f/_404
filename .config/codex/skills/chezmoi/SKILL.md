@@ -19,12 +19,13 @@ The compatibility mirror:
 
 The live resolved home:
 
-- `~/.config/codex`
+- `~/.local/share/codex`
 
 ## Use This Skill When
 
 - the user wants to edit tracked config under `dotfiles`
 - the task involves syncing `chezmoi/dot_config/...` and live `~/.config/...`
+- the task involves syncing `chezmoi/dot_config/...` and live `~/.local/share/...`
 - you need to verify which path is authoritative
 - the task risks split-brain duplication between `config/` and `chezmoi/dot_config/`
 - the request is about recovering, moving, or normalizing Codex config layout
@@ -43,7 +44,9 @@ For this repo, the intended Codex layout is:
 
 - `dotfiles/chezmoi/dot_config/codex` -> real tracked tree
 - `dotfiles/config/codex` -> convenience mirror path
-- `~/.config/codex` -> live applied tree
+- `~/.config/codex` -> authored config tree
+- `~/.local/share/codex` -> live applied tree
+- `~/.local/state/codex` and `~/.cache/codex` -> runtime state and cache
 
 ## Recovery Rules
 
