@@ -226,7 +226,80 @@ dotctl_audit_vet() {
   dotctl_cue_vet "$HOME/.config/dotfiles-audit/policy/dotfiles_audit.cue" "$audit_json" '#Audit'
 }
 
+dotctl_audit_bootstrap_run() {
+  local bootstrap_root="${DOTFILES_BOOTSTRAP_ROOT:-}"
+  local bootstrap_repo="${DOTFILES_BOOTSTRAP_REPO:-}"
+  local ts audit_dir audit_json
+
+  bootstrap_root="${bootstrap_root%/}"
+  bootstrap_repo="${bootstrap_repo%/}"
+
+  [[ -n "$bootstrap_root" ]] || {
+    printf 'missing bootstrap root\n' >&2
+    return 1
+  }
+
+  [[ -n "$bootstrap_repo" ]] || {
+    printf 'missing bootstrap repo\n' >&2
+    return 1
+  }
+
+  ts="$(date +%Y%m%d-%H%M%S)"
+  audit_dir="${DOTCTL_AUDIT_STATE_HOME}/${ts}"
+  audit_json="$audit_dir/bootstrap-audit.json"
+
+  dotctl_fs_mkdir_p "$audit_dir"
+
+  dotctl_jq -n \
+    --arg schema 'dotctl.bootstrap.audit.v0' \
+    --arg bootstrap_root "$bootstrap_root" \
+    --arg bootstrap_repo "$bootstrap_repo" \
+    --arg xdg_config_home "$XDG_CONFIG_HOME" \
+    --arg tool_path_home "$TOOL_PATH_HOME" \
+    --arg dotctl_path "$TOOL_PATH_HOME/dotctl" \
+    --arg yadm_bootstrap "$XDG_CONFIG_HOME/yadm/bootstrap" \
+    '{
+      schema: $schema,
+      bootstrap: {
+        root: $bootstrap_root,
+        repo: $bootstrap_repo,
+        configHome: $xdg_config_home,
+        toolPathHome: $tool_path_home,
+        dotctl: {
+          path: $dotctl_path,
+          exists: true
+        },
+        source: {
+          bootstrap: {
+            path: $yadm_bootstrap,
+            exists: true
+          }
+        }
+      }
+    }' > "$audit_json"
+
+  [[ -x "$TOOL_PATH_HOME/dotctl" ]] || {
+    printf 'missing projected dotctl: %s\n' "$TOOL_PATH_HOME/dotctl" >&2
+    return 1
+  }
+
+  [[ -r "$XDG_CONFIG_HOME/yadm/bootstrap" ]] || {
+    printf 'missing bootstrap seed: %s\n' "$XDG_CONFIG_HOME/yadm/bootstrap" >&2
+    return 1
+  }
+
+  printf '%s\t%s\n' bootstrap_root "$bootstrap_root"
+  printf '%s\t%s\n' bootstrap_repo "$bootstrap_repo"
+  printf '%s\t%s\n' projected_dotctl "$TOOL_PATH_HOME/dotctl"
+  printf 'audit=%s\n' "$audit_dir"
+}
+
 dotctl_audit_run() {
+  if [[ "${DOTFILES_BOOTSTRAP_MODE:-}" == git ]]; then
+    dotctl_audit_bootstrap_run
+    return 0
+  fi
+
   local -a targets=()
   local ts audit_dir audit_json
   local arg

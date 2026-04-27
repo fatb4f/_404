@@ -11,24 +11,23 @@ need() {
 }
 
 need git
-need yadm
 
-if ! yadm status >/dev/null 2>&1; then
-  yadm clone "$repo"
-fi
+if [[ "${DOTFILES_BOOTSTRAP_MODE:-git}" == yadm ]] && command -v yadm >/dev/null 2>&1 && yadm status >/dev/null 2>&1; then
+  yadm bootstrap
 
-yadm bootstrap
+  if [[ -r "$HOME/.config/shell/load-env.sh" ]]; then
+    # shellcheck source=/dev/null
+    . "$HOME/.config/shell/load-env.sh"
+  fi
 
-if [[ -r "$HOME/.config/shell/load-env.sh" ]]; then
-  # shellcheck source=/dev/null
-  . "$HOME/.config/shell/load-env.sh"
-fi
-
-if command -v dotctl >/dev/null 2>&1; then
-  dotctl check
-elif command -v just >/dev/null 2>&1; then
-  just check
+  if command -v dotctl >/dev/null 2>&1; then
+    dotctl check
+  elif command -v just >/dev/null 2>&1; then
+    just check
+  else
+    printf 'warning: no controller found after bootstrap\n' >&2
+    exit 1
+  fi
 else
-  printf 'warning: no controller found after bootstrap\n' >&2
-  exit 1
+  exec "$HOME/.config/dotfiles-provision/bootstrap-git.sh"
 fi

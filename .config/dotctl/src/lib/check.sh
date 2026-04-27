@@ -12,6 +12,23 @@ dotctl_check_shell() {
 }
 
 dotctl_check_bootstrap() {
+  if [[ "${DOTFILES_BOOTSTRAP_MODE:-}" == git ]]; then
+    local fragment
+
+    bash -n "$XDG_CONFIG_HOME/yadm/bootstrap"
+
+    for fragment in "$XDG_CONFIG_HOME"/yadm/bootstrap.d/*.sh; do
+      bash -n "$fragment"
+    done
+
+    [[ -x "$TOOL_PATH_HOME/dotctl" ]] || {
+      printf 'missing projected dotctl: %s\n' "$TOOL_PATH_HOME/dotctl" >&2
+      return 1
+    }
+
+    return 0
+  fi
+
   bash -n "$XDG_CONFIG_HOME/yadm/bootstrap"
 
   for f in "$XDG_CONFIG_HOME"/yadm/bootstrap.d/*.sh; do
@@ -24,8 +41,11 @@ dotctl_check_bootstrap() {
 dotctl_check_all() {
   dotctl_check_shell
   dotctl_check_bootstrap
-  dotctl_git_refresh
   dotctl_audit_run
-  dotctl_yadm_status
   dotctl_doctor_run false
+
+  if [[ "${DOTFILES_BOOTSTRAP_MODE:-}" != git ]]; then
+    dotctl_git_refresh
+    dotctl_yadm_status
+  fi
 }

@@ -35,6 +35,9 @@ check-bootstrap:
 bootstrap:
     dotctl bootstrap
 
+bootstrap-git:
+    "$HOME/.config/dotfiles-provision/bootstrap-git.sh"
+
 audit:
     dotctl audit run
 
