@@ -41,4 +41,6 @@ env -i HOME="$HOME" USER="${USER:-user}" SHELL=/bin/zsh zsh -f -c '
   esac
 '
 
+"$root/check-env-ownership.py" "$root"
+
 echo "shell env validation passed"

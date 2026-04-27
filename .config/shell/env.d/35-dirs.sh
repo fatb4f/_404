@@ -1,3 +1,6 @@
+export GDRIVE="${GDRIVE:-/mnt/chromeos/GoogleDrive/MyDrive}"
+export PRJROOT="${PRJROOT:-$HOME/src}"
+
 export DIRS=""
 
 dirs_prepend() {
@@ -19,7 +22,7 @@ dirs_prepend "$DIR_WIKI"
 export DIR_DOTS="${DIR_DOTS:-$HOME}"
 dirs_prepend "$DIR_DOTS"
 
-export DIR_BOOTSTRAP="${DIR_BOOTSTRAP:-${XDG_DATA_HOME:-$HOME/.local/share}/src/_404-bootstrap}"
+export DIR_BOOTSTRAP="${DIR_BOOTSTRAP:-${XDG_DATA_HOME:-$HOME/.local/share}/src/bootstrap}"
 dirs_prepend "$DIR_BOOTSTRAP"
 
 if [ -n "${ZSH_VERSION-}" ]; then

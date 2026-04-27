@@ -10,9 +10,15 @@ else
   export RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"
 fi
 
+export GOPATH="${GOPATH:-$HOME/go}"
+export GOBIN="${GOBIN:-$GOPATH/bin}"
+
 if [[ -d "$CARGO_HOME/bin" ]]; then
   path_prepend "$CARGO_HOME/bin"
 fi
+
+path_prepend "$HOME/.go/bin"
+path_prepend "$GOBIN"
 
 if [[ -f "$HOME/.cargo/env" ]]; then
   . "$HOME/.cargo/env"

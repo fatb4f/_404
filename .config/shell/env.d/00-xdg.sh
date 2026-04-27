@@ -3,11 +3,6 @@ XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME%/}"
 export XDG_CONFIG_HOME
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-export XDG_DATA_BIN="${XDG_DATA_BIN:-$HOME/.local/bin}"
-export XDG_DATA_BIN="${XDG_DATA_BIN%/}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export XDG_CONFIG_DIRS="${XDG_CONFIG_DIRS:-/etc/xdg}"
 export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-
-export ANDROID_USER_HOME="${ANDROID_USER_HOME:-$XDG_DATA_HOME/android}"
-export LESSHISTFILE="${LESSHISTFILE:-$XDG_STATE_HOME/lesshst}"
