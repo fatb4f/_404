@@ -80,6 +80,12 @@ package dotctl
       thin:      true
       line_count: <=6
     }
+    doctor: #Command & {
+      path:      ".config/dotctl/src/doctor_command.sh"
+      exists:    true
+      thin:      true
+      line_count: <=6
+    }
     status: #Command & {
       path:      ".config/dotctl/src/status_command.sh"
       exists:    true
@@ -113,6 +119,10 @@ package dotctl
       path:   ".config/dotctl/src/lib/check.sh"
       exists: true
     }
+    doctor: #Lib & {
+      path:   ".config/dotctl/src/lib/doctor.sh"
+      exists: true
+    }
     yadm: #Lib & {
       path:   ".config/dotctl/src/lib/yadm.sh"
       exists: true
@@ -136,6 +146,10 @@ package dotctl
       }
       jq: #Lib & {
         path:   ".config/dotctl/src/lib/handler/jq.sh"
+        exists: true
+      }
+      kitty: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/kitty.sh"
         exists: true
       }
       yadm: #Lib & {

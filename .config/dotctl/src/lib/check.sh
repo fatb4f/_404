@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/audit.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/doctor.sh"
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/bashly.sh"
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/fs.sh"
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/git.sh"
@@ -26,4 +27,5 @@ dotctl_check_all() {
   dotctl_git_refresh
   dotctl_audit_run
   dotctl_yadm_status
+  dotctl_doctor_run false
 }
