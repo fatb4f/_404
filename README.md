@@ -134,3 +134,7 @@ The next high-signal work is to harden the GitHub release installer:
 1. add checksums/attestation fields to `strap/src/lib/pkgs/artifacts.json`
 2. split `penguin` into a `debian-base + chromeos-vm` overlay
 3. add a `bare-git` dotfile backend beside the current `yadm` backend
+
+The `arch-usb` workflow now assembles a Submarine-shaped external disk image
+from the `arch-rootfs-intermediate` artifact and the `submarine-x86.kpart`
+payload, rather than converting the Arch Boxes qcow2 into a plain Arch disk.
