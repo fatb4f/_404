@@ -7,7 +7,7 @@ jobs:
   build-rootfs:
     runs-on: ubuntu-24.04
     env:
-      ROOTFS_CACHE_VERSION: v2
+      ROOTFS_CACHE_VERSION: v3
     steps:
       - uses: actions/checkout@v4
 
@@ -15,7 +15,7 @@ jobs:
         id: rootfs-cache
         uses: actions/cache/restore@v4
         with:
-          path: ${{ runner.temp }}/arch-rootfs.ext4.zst
+          path: ${{ runner.temp }}/arch-rootfs.ext4.v3.zst
           key: arch-rootfs-ext4-${{ env.ROOTFS_CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('scripts/build-rootfs.sh') }}
 
       - name: Install build dependencies
@@ -27,22 +27,22 @@ jobs:
       - name: Build rootfs artifact
         if: steps.rootfs-cache.outputs.cache-hit != 'true'
         run: |
-          ARCH_ROOTFS_IMG="$RUNNER_TEMP/arch-rootfs.ext4" \
-          ARCH_ROOTFS_IMG_ZST="$RUNNER_TEMP/arch-rootfs.ext4.zst" \
+          ARCH_ROOTFS_IMG="$RUNNER_TEMP/arch-rootfs.ext4.v3" \
+          ARCH_ROOTFS_IMG_ZST="$RUNNER_TEMP/arch-rootfs.ext4.v3.zst" \
             bash ./scripts/build-rootfs.sh
 
       - name: Save rootfs cache
         if: steps.rootfs-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{ runner.temp }}/arch-rootfs.ext4.zst
+          path: ${{ runner.temp }}/arch-rootfs.ext4.v3.zst
           key: arch-rootfs-ext4-${{ env.ROOTFS_CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('scripts/build-rootfs.sh') }}
 
       - name: Validate cached rootfs
         if: steps.rootfs-cache.outputs.cache-hit == 'true'
         run: |
           tmp="$RUNNER_TEMP/arch-rootfs.cachecheck.ext4"
-          zstd -dc "$RUNNER_TEMP/arch-rootfs.ext4.zst" > "$tmp"
+          zstd -dc "$RUNNER_TEMP/arch-rootfs.ext4.v3.zst" > "$tmp"
           type="$(blkid -p -o value -s TYPE "$tmp")"
           if [[ "$type" != ext4 ]]; then
             echo "cached rootfs is not ext4: $type" >&2
@@ -55,7 +55,7 @@ jobs:
         with:
           name: arch-rootfs
           path: |
-            ${{ runner.temp }}/arch-rootfs.ext4.zst
+            ${{ runner.temp }}/arch-rootfs.ext4.v3.zst
           if-no-files-found: error
 
   build-image:
@@ -67,7 +67,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl unzip qemu-utils gdisk e2fsprogs cgpt rsync zstd
+          sudo apt-get install -y curl unzip qemu-utils gdisk parted e2fsprogs cgpt rsync zstd
 
       - name: Download rootfs artifact
         uses: actions/download-artifact@v4
@@ -78,7 +78,7 @@ jobs:
       - name: Build arch USB image
         run: |
           ARCH_USB_RAW="$RUNNER_TEMP/arch-usb.raw" \
-          ARCH_USB_ROOTFS_IMG_ZST="$RUNNER_TEMP/rootfs/arch-rootfs.ext4.zst" \
+          ARCH_USB_ROOTFS_IMG_ZST="$RUNNER_TEMP/rootfs/arch-rootfs.ext4.v3.zst" \
             bash ./scripts/build-arch-usb.sh
 
       - name: Upload image artifact

@@ -63,7 +63,7 @@ need_cmd() {
   }
 }
 
-for cmd in bash dd losetup mkfs.ext4 mount qemu-img sgdisk rsync udevadm zstd cgpt blkid; do
+for cmd in bash dd losetup mkfs.ext4 mount qemu-img sgdisk rsync udevadm zstd cgpt blkid partprobe; do
   need_cmd "$cmd"
 done
 
@@ -117,14 +117,18 @@ qemu-img create -f raw "$RAW" "$FINAL_SIZE"
 sgdisk -o "$RAW"
 sgdisk -n1:2048:+16M -t1:7F00 -c1:Submarine "$RAW"
 sgdisk -n2:0:0 -t2:8300 -c2:Arch\ Linux\ root "$RAW"
+partprobe "$RAW" || true
 
 LOOP_DEV="$(losetup --find --show --partscan "$RAW")"
 udevadm settle
 
 cgpt add -i 1 -t kernel -P 15 -T 1 -S 1 "$LOOP_DEV"
+partprobe "$LOOP_DEV" || true
+udevadm settle
 
 mkfs.ext4 -F -L ARCHROOT "${LOOP_DEV}p2"
-root_fstype="$(lsblk -no FSTYPE "${LOOP_DEV}p2" | tr -d '[:space:]')"
+udevadm settle
+root_fstype="$(blkid -p -o value -s TYPE "${LOOP_DEV}p2" | tr -d '[:space:]')"
 if [[ "$root_fstype" != ext4 ]]; then
   echo "root partition is not ext4: $root_fstype" >&2
   exit 1
