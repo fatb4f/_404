@@ -47,3 +47,13 @@ package dotctl
 	]
 	_generatedTracked: []
 }
+
+#GitAddPlan: {
+	schema: "dotctl.git.add.plan.v0"
+	operation: "add"
+
+	observed: #GitSubstrate
+
+	requested_targets: [...#RelPath]
+	resolved_targets: [...#RelPath]
+}

@@ -67,6 +67,12 @@ package dotctl
         thin:      true
         line_count: <=6
       }
+      add: #Command & {
+        path:      ".config/dotctl/src/git_add_command.sh"
+        exists:    true
+        thin:      true
+        line_count: <=6
+      }
     }
     check: #Command & {
       path:      ".config/dotctl/src/check_command.sh"
@@ -111,7 +117,35 @@ package dotctl
       path:   ".config/dotctl/src/lib/yadm.sh"
       exists: true
     }
+    handler: {
+      bashly: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/bashly.sh"
+        exists: true
+      }
+      cue: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/cue.sh"
+        exists: true
+      }
+      fs: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/fs.sh"
+        exists: true
+      }
+      git: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/git.sh"
+        exists: true
+      }
+      jq: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/jq.sh"
+        exists: true
+      }
+      yadm: #Lib & {
+        path:   ".config/dotctl/src/lib/handler/yadm.sh"
+        exists: true
+      }
+    }
   }
+
+  external_invocations: close({})
 
   generated: {
     ".config/dotctl/dotctl": false

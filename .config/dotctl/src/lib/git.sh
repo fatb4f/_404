@@ -1,17 +1,10 @@
 # shellcheck shell=bash
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/env.sh"
-
-dotctl_git_require_tools() {
-  local cmd
-
-  for cmd in "$@"; do
-    command -v "$cmd" >/dev/null 2>&1 || {
-      printf 'missing required command: %s\n' "$cmd" >&2
-      return 1
-    }
-  done
-}
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/cue.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/fs.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/git.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/jq.sh"
 
 dotctl_git_json_array() {
   local -a items=("$@")
@@ -21,7 +14,30 @@ dotctl_git_json_array() {
     return 0
   fi
 
-  printf '%s\0' "${items[@]}" | jq -Rs 'split("\u0000")[:-1]'
+  printf '%s\0' "${items[@]}" | dotctl_jq -Rs 'split("\u0000")[:-1]'
+}
+
+dotctl_git_collect_addable_paths() {
+  local input_json="${1:?missing git substrate snapshot}"
+
+  dotctl_jq -r '
+    [
+      .paths.dirty[],
+      .paths.untracked[],
+      .paths.deleted[]
+    ]
+    | unique[]
+  ' "$input_json"
+}
+
+dotctl_git_load_pathset() {
+  local input_json="${1:?missing git substrate snapshot}"
+  local -n pathset_ref="${2:?missing pathset reference}"
+  local path
+
+  while IFS= read -r path; do
+    [[ -n "$path" ]] && pathset_ref["$path"]=1
+  done < <(dotctl_git_collect_addable_paths "$input_json")
 }
 
 dotctl_git_normalize_status_path() {
@@ -58,11 +74,11 @@ dotctl_git_collect_status() {
         fi
         ;;
     esac
-  done < <(git -C "$HOME" status --porcelain=v1 --branch --untracked-files=all --ignored)
+  done < <(dotctl_git_status_porcelain "$HOME")
 
   while IFS= read -r -d '' path; do
     [[ -n "$path" ]] && printf 'tracked\t%s\n' "$path"
-  done < <(git -C "$HOME" ls-files -z --full-name)
+  done < <(dotctl_git_ls_files_z "$HOME")
 }
 
 dotctl_git_observe() {
@@ -82,19 +98,17 @@ dotctl_git_observe() {
     [[ -n "$arg" ]] && : # reserved for future target selectors
   done
 
-  dotctl_git_require_tools git jq
-
-  repo="$(git -C "$HOME" rev-parse --git-dir)"
-  worktree="$(git -C "$HOME" rev-parse --show-toplevel)"
-  branch="$(git -C "$HOME" symbolic-ref -q --short HEAD || printf 'HEAD')"
-  upstream="$(git -C "$HOME" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
-  head="$(git -C "$HOME" rev-parse HEAD)"
+  repo="$(dotctl_git_rev_parse_git_dir "$HOME")"
+  worktree="$(dotctl_git_rev_parse_toplevel "$HOME")"
+  branch="$(dotctl_git_symbolic_branch "$HOME" || printf 'HEAD')"
+  upstream="$(dotctl_git_upstream_ref "$HOME")"
+  head="$(dotctl_git_head_rev "$HOME")"
   ahead=0
   behind=0
 
   if [[ -n "$upstream" ]]; then
     read -r ahead behind < <(
-      git -C "$HOME" rev-list --left-right --count "HEAD...@{u}"
+      dotctl_git_ahead_behind "$HOME"
     )
   fi
 
@@ -112,14 +126,14 @@ dotctl_git_observe() {
 
   generated_dotctl=false
   generated_bin_dotctl=false
-  if git -C "$HOME" ls-files --error-unmatch ".config/dotctl/dotctl" >/dev/null 2>&1; then
+  if dotctl_git_ls_files_error_unmatch "$HOME" ".config/dotctl/dotctl"; then
     generated_dotctl=true
   fi
-  if git -C "$HOME" ls-files --error-unmatch ".config/dotctl/bin/dotctl" >/dev/null 2>&1; then
+  if dotctl_git_ls_files_error_unmatch "$HOME" ".config/dotctl/bin/dotctl"; then
     generated_bin_dotctl=true
   fi
 
-  tmpdir="$(mktemp -d)"
+  tmpdir="$(dotctl_fs_mktemp_dir)"
   tracked_json="$tmpdir/tracked.json"
   dirty_json="$tmpdir/dirty.json"
   untracked_json="$tmpdir/untracked.json"
@@ -132,7 +146,7 @@ dotctl_git_observe() {
   dotctl_git_json_array "${deleted[@]}" > "$deleted_json"
   dotctl_git_json_array "${ignored[@]}" > "$ignored_json"
 
-  jq -n \
+  dotctl_jq -n \
     --arg repo "$repo" \
     --arg worktree "$worktree" \
     --arg branch "$branch" \
@@ -176,69 +190,133 @@ dotctl_git_observe() {
       syntax_failures: {}
     }' > "${output_json:-/dev/stdout}"
 
-  rm -rf "$tmpdir"
+  dotctl_fs_rm_rf "$tmpdir"
 }
 
 dotctl_git_vet() {
   local input_json="${1:?missing git substrate snapshot}"
 
-  dotctl_git_require_tools cue
-  cue vet "$DOTCTL_GIT_POLICY" "$input_json" -d '#GitSubstrate'
+  dotctl_cue_vet "$DOTCTL_GIT_POLICY" "$input_json" '#GitSubstrate'
 }
 
 dotctl_git_project_state() {
   local input_json="${1:?missing git substrate snapshot}"
 
-  dotctl_git_require_tools jq
-
   if [[ "${DOTCTL_GIT_ASSUME_VETTED:-0}" != 1 ]]; then
     dotctl_git_vet "$input_json"
   fi
 
-  mkdir -p \
+  dotctl_fs_mkdir_p \
     "$DOTCTL_GIT_CACHE_HOME" \
     "$DOTCTL_GIT_STATE_HOME" \
     "$DOTCTL_GIT_DATA_HOME"
 
   if [[ "$input_json" != "$DOTCTL_GIT_OBSERVE_JSON" ]]; then
-    cp "$input_json" "$DOTCTL_GIT_OBSERVE_JSON"
+    dotctl_fs_cp "$input_json" "$DOTCTL_GIT_OBSERVE_JSON"
   fi
-  cp "$input_json" "$DOTCTL_GIT_LAST_VETTED_JSON"
+  dotctl_fs_cp "$input_json" "$DOTCTL_GIT_LAST_VETTED_JSON"
 
-  jq '{schema:"dotctl.git.current.v0", backend:.backend, refs:.refs, paths:.paths, generated:.generated}' \
+  dotctl_jq '{schema:"dotctl.git.current.v0", backend:.backend, refs:.refs, paths:.paths, generated:.generated}' \
     "$input_json" > "$DOTCTL_GIT_CURRENT_JSON"
 
-  jq '{schema:"dotctl.git.dirty.v0", dirty:.paths.dirty, untracked:.paths.untracked, deleted:.paths.deleted, ignored:.paths.ignored}' \
+  dotctl_jq '{schema:"dotctl.git.dirty.v0", dirty:.paths.dirty, untracked:.paths.untracked, deleted:.paths.deleted, ignored:.paths.ignored}' \
     "$input_json" > "$DOTCTL_GIT_DIRTY_JSON"
 
-  jq '{schema:"dotctl.git.tracked.v0", tracked:.paths.tracked}' \
+  dotctl_jq '{schema:"dotctl.git.tracked.v0", tracked:.paths.tracked}' \
     "$input_json" > "$DOTCTL_GIT_TRACKED_JSON"
 
-  jq '{schema:"dotctl.git.refs.v0", refs:.refs}' \
+  dotctl_jq '{schema:"dotctl.git.refs.v0", refs:.refs}' \
     "$input_json" > "$DOTCTL_GIT_REFS_JSON"
 }
 
 dotctl_git_refresh() {
   local observe_json="$DOTCTL_GIT_OBSERVE_JSON"
 
-  mkdir -p "$DOTCTL_GIT_CACHE_HOME"
+  dotctl_fs_mkdir_p "$DOTCTL_GIT_CACHE_HOME"
   dotctl_git_observe "$observe_json" >/dev/null
   dotctl_git_vet "$observe_json"
   DOTCTL_GIT_ASSUME_VETTED=1 dotctl_git_project_state "$observe_json" >/dev/null
   dotctl_git_status
 }
 
+dotctl_git_add() {
+  local tmpdir snapshot plan_json requested_json resolved_json
+  local -a requested_targets=() resolved_targets=() observed_targets=()
+  local -A addable=()
+  local target
+
+  for target in "$@"; do
+    [[ -n "$target" ]] && requested_targets+=("$target")
+  done
+
+  tmpdir="$(dotctl_fs_mktemp_dir)"
+  snapshot="$tmpdir/observe.json"
+  plan_json="$tmpdir/add-plan.json"
+
+  dotctl_git_observe "$snapshot" >/dev/null
+  dotctl_git_vet "$snapshot"
+  dotctl_git_load_pathset "$snapshot" addable
+
+  if ((${#requested_targets[@]} == 0)); then
+    printf 'dotctl git add requires at least one PATH\n' >&2
+    rm -rf "$tmpdir"
+    return 1
+  fi
+
+  for target in "${requested_targets[@]}"; do
+    if [[ -z "${addable[$target]:-}" ]]; then
+      printf 'refusing to stage non-addable path: %s\n' "$target" >&2
+      rm -rf "$tmpdir"
+      return 1
+    fi
+    resolved_targets+=("$target")
+  done
+
+  for target in "${resolved_targets[@]}"; do
+    case "$target" in
+      ".config/dotctl/dotctl"|".config/dotctl/bin/dotctl")
+        printf 'refusing to stage generated dotctl artifact: %s\n' "$target" >&2
+        rm -rf "$tmpdir"
+        return 1
+        ;;
+    esac
+  done
+
+  requested_json="$(dotctl_git_json_array "${requested_targets[@]}")"
+  resolved_json="$(dotctl_git_json_array "${resolved_targets[@]}")"
+
+  dotctl_jq -n \
+    --slurpfile observed "$snapshot" \
+    --argjson requested_targets "$requested_json" \
+    --argjson resolved_targets "$resolved_json" \
+    '{
+      schema: "dotctl.git.add.plan.v0",
+      operation: "add",
+      observed: $observed[0],
+      requested_targets: $requested_targets,
+      resolved_targets: $resolved_targets
+    }' > "$plan_json"
+
+  dotctl_cue_vet "$DOTCTL_GIT_POLICY" "$plan_json" '#GitAddPlan'
+
+  dotctl_git_add_paths "$HOME" "${resolved_targets[@]}"
+  dotctl_git_refresh
+  dotctl_fs_rm_rf "$tmpdir"
+}
+
 dotctl_git_status() {
   local snapshot="$DOTCTL_GIT_CURRENT_JSON"
+  local snapshot_dir=""
   local cleanup_snapshot=false
 
   if [[ ! -f "$snapshot" ]]; then
-    snapshot="$(mktemp)"
+    snapshot_dir="$(dotctl_fs_mktemp_dir)"
+    snapshot="$snapshot_dir/status.json"
     cleanup_snapshot=true
     dotctl_git_observe "$snapshot" >/dev/null
   fi
 
-  jq -r '
+  dotctl_jq -r '
     [
       ["backend.kind", .backend.kind],
       ["backend.repo", .backend.repo],
@@ -259,6 +337,7 @@ dotctl_git_status() {
   ' "$snapshot"
 
   if [[ "$cleanup_snapshot" == true ]]; then
-    rm -f "$snapshot"
+    dotctl_fs_rm_rf "$snapshot"
+    [[ -n "$snapshot_dir" ]] && dotctl_fs_rm_rf "$snapshot_dir"
   fi
 }

@@ -1,6 +1,10 @@
 # shellcheck shell=bash
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/env.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/cue.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/fs.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/jq.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/yadm.sh"
 
 dotctl_audit_observe() {
   local output_json=""
@@ -27,14 +31,14 @@ dotctl_audit_observe() {
   audit_dir="$state_home/$ts"
   records="$audit_dir/inventory.ndjson"
 
-  mkdir -p "$audit_dir"
+  dotctl_fs_mkdir_p "$audit_dir"
   : > "$records"
 
   dotctl_audit_collect_records "${targets[@]}" > "$records"
   dotctl_audit_render_json "$records" "$audit_dir/audit.json"
 
   if [[ -n "$output_json" && "$output_json" != "$audit_dir/audit.json" ]]; then
-    cp "$audit_dir/audit.json" "$output_json"
+    dotctl_fs_cp "$audit_dir/audit.json" "$output_json"
   else
     cat "$audit_dir/audit.json"
   fi
@@ -68,7 +72,7 @@ dotctl_audit_observe_path() {
   syntax_ok=null
   syntax_tool=null
 
-  if yadm ls-files --error-unmatch "$rel" >/dev/null 2>&1; then
+  if dotctl_yadm_handler ls-files --error-unmatch "$rel" >/dev/null 2>&1; then
     tracked=true
   fi
 
@@ -78,7 +82,7 @@ dotctl_audit_observe_path() {
 
   IFS=$'\t' read -r syntax_checked syntax_ok syntax_tool < <(dotctl_audit_syntax_probe "$path" "$kind")
 
-  jq -n \
+  dotctl_jq -n \
     --arg path "$rel" \
     --arg family "$family" \
     --arg kind "$kind" \
@@ -161,7 +165,7 @@ dotctl_audit_syntax_probe() {
     *)
       case "$ext" in
         lua)
-          if command -v luac >/dev/null 2>&1; then
+          if dotctl_tool_exists luac; then
             if luac -p "$path" >/dev/null 2>&1; then
               printf '%s\t%s\t%s\n' true true 'luac -p'
             else
@@ -183,7 +187,7 @@ dotctl_audit_render_json() {
   local records="$1"
   local audit_json="$2"
 
-  jq -s '
+  dotctl_jq -s '
     def obs: {path, kind, family};
     def mapify(stream):
       reduce stream[] as $r ({}; .[$r.path] = $r);
@@ -204,7 +208,7 @@ dotctl_audit_render_json() {
 dotctl_audit_summary() {
   local audit_json="$1"
 
-  jq -r '
+  dotctl_jq -r '
     [
       ["live_files", (.observed.live_files | length)],
       ["yadm_tracked", (.observed.yadm_tracked | length)],
@@ -219,7 +223,7 @@ dotctl_audit_summary() {
 dotctl_audit_vet() {
   local audit_json="$1"
 
-  cue vet "$HOME/.config/dotfiles-audit/policy/dotfiles_audit.cue" "$audit_json" -d '#Audit'
+  dotctl_cue_vet "$HOME/.config/dotfiles-audit/policy/dotfiles_audit.cue" "$audit_json" '#Audit'
 }
 
 dotctl_audit_run() {
@@ -239,7 +243,7 @@ dotctl_audit_run() {
   audit_dir="${DOTCTL_AUDIT_STATE_HOME}/${ts}"
   audit_json="$audit_dir/audit.json"
 
-  mkdir -p "$audit_dir"
+  dotctl_fs_mkdir_p "$audit_dir"
   dotctl_audit_observe "$audit_json" "${targets[@]}" >/dev/null
   dotctl_audit_vet "$audit_json"
   dotctl_audit_summary "$audit_json"

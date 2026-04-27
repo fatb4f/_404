@@ -59,6 +59,14 @@ commands:
         help: Show Git substrate status summary
         filename: git_status_command.sh
 
+      - name: add
+        help: Stage observed Git changes through a gated add plan
+        filename: git_add_command.sh
+        args:
+          - name: paths
+            repeatable: true
+            help: Paths to stage; defaults to all observed addable paths
+
   - name: check
     help: Run shell, bootstrap, audit, and yadm checks
 

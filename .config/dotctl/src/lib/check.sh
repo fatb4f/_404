@@ -1,6 +1,8 @@
 # shellcheck shell=bash
 
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/audit.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/bashly.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/handler/fs.sh"
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/git.sh"
 source "${XDG_CONFIG_HOME:-$HOME/.config}/dotctl/src/lib/yadm.sh"
 
