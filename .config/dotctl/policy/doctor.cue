@@ -97,3 +97,26 @@ package dotctl
     }
   }
 }
+
+#Tier0OperatorRequest: {
+  backend: "matrix" | "headless" | "kitty-run-shell"
+  strict: bool | *true
+  json: bool | *false
+  report_dir?: string
+  state_root?: string
+}
+
+#Tier0OperatorResult: {
+  ok: bool
+  backend: string
+  schema_ok: bool
+  success_ok: bool
+  state_root: string
+  report_dir?: string
+  reports: [...{
+    distro?: string
+    path: string
+    schema_ok: bool
+    success_ok: bool
+  }]
+}

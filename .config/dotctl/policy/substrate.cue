@@ -86,6 +86,12 @@ package dotctl
       thin:      true
       line_count: <=6
     }
+    doctor_test_tier0: #Command & {
+      path:      ".config/dotctl/src/doctor_test_tier0_command.sh"
+      exists:    true
+      thin:      true
+      line_count: <=12
+    }
     status: #Command & {
       path:      ".config/dotctl/src/status_command.sh"
       exists:    true
@@ -121,6 +127,10 @@ package dotctl
     }
     doctor: #Lib & {
       path:   ".config/dotctl/src/lib/doctor.sh"
+      exists: true
+    }
+    tier0: #Lib & {
+      path:   ".config/dotctl/src/lib/tier0.sh"
       exists: true
     }
     yadm: #Lib & {

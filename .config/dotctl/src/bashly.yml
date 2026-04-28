@@ -76,6 +76,26 @@ commands:
     flags:
       - long: --json
         help: Emit doctor graph as JSON
+    commands:
+      - name: test-tier0
+        help: Run Tier-0 robustness checks through the harness
+        filename: doctor_test_tier0_command.sh
+        flags:
+          - long: --backend
+            arg: backend
+            default: matrix
+            help: Select the Tier-0 backend
+          - long: --strict
+            arg: strict
+            default: "true"
+            help: Enable strict Tier-0 matrix behavior
+          - long: --json
+            help: Emit a compact operator result as JSON
+          - long: --summary
+            help: Emit summary output
+          - long: --report-dir
+            arg: path
+            help: Export Tier-0 artifacts into a report directory
 
   - name: bootstrap
     help: Run yadm bootstrap

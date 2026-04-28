@@ -17,6 +17,15 @@ check-tier0:
 lint-shell:
     bash "$HOME/.config/shell/lint-shell.sh"
 
+test-tier0-execution-synthetic:
+    bash ./tier-0/tests/tier0/scripts/tier0-execution-synthetic.sh
+
+test-tier0-substrate-synthetic:
+    bash ./tier-0/tests/tier0/scripts/tier0-substrate-synthetic.sh
+
+test-tier0-command-surface:
+    bash ./tier-0/tests/tier0/scripts/tier0-command-surface-synthetic.sh
+
 precommit-lint:
     {{load_env}}; mkdir -p "$XDG_DATA_HOME/dotctl/policy" "$XDG_STATE_HOME/shell"
     {{load_env}}; cue eval "$HOME/.config/shell/policy/lint"/*.cue > "$XDG_DATA_HOME/dotctl/policy/shell-lint.cue"
