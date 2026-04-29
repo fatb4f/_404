@@ -1,6 +1,6 @@
 package catalogue
 
-import "stage.local/schema"
+import "stage.local/policy/schema"
 
 entries: [...schema.#ManifestEntry]
 
