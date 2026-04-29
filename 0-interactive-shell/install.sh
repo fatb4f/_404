@@ -4,7 +4,6 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/policy/lib/fs.sh"
 
-: "${CODEX_ROOT:?CODEX_ROOT is required}"
 : "${CODEX_DRY_RUN:=0}"
 
 codex_stage_require_ready "00-shell"

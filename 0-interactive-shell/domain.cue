@@ -50,7 +50,6 @@ domain: schema.#Domain & {
   provides: [
     "shell.interactive.minimal",
     "shell.interactive.loadable",
-    "shell.interactive.load-order",
     "shell.interactive.ready",
   ]
 
@@ -66,12 +65,6 @@ domain: schema.#Domain & {
       command: "zsh -i -c exit"
       severity: "degraded"
       provides: ["shell.interactive.loadable"]
-    },
-    {
-      id: "zsh-load-order"
-      command: "grep -q 'bootstrap/00-shell.ready' $HOME/.zshenv && grep -q 'CODEX_ROOT/00-shell/init.sh' $HOME/.zshenv && grep -q 'bootstrap/10-terminal.ready' $HOME/.zshrc && grep -q 'CODEX_ROOT/10-terminal/init.sh' $HOME/.zshrc && grep -q 'CODEX_ROOT/20-agent/init.sh' $HOME/.zshrc"
-      severity: "degraded"
-      provides: ["shell.interactive.load-order"]
     },
     {
       id: "shell-interactive-ready"

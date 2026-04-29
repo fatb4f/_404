@@ -30,12 +30,11 @@ else
 fi
 
 if [ -f "$HOME/.zshrc" ] && zsh -n "$HOME/.zshrc" && \
-   grep -q 'bootstrap/10-terminal.ready' "$HOME/.zshrc" && \
-   grep -q 'CODEX_ROOT/10-terminal/init.sh' "$HOME/.zshrc" && \
-   grep -q 'CODEX_ROOT/20-agent/init.sh' "$HOME/.zshrc"; then
-  emit_check interactive-shell zshrc-parse true ok ".zshrc parses and loads stage 1"
+   ! grep -q 'CODEX_ROOT/10-terminal/init.sh' "$HOME/.zshrc" && \
+   ! grep -q 'CODEX_ROOT/20-agent/init.sh' "$HOME/.zshrc"; then
+  emit_check interactive-shell zshrc-parse true ok ".zshrc parses and stays local"
 else
-  emit_check interactive-shell zshrc-parse false degraded ".zshrc missing, parse failure, or stage 1 load missing"
+  emit_check interactive-shell zshrc-parse false degraded ".zshrc missing, parse failure, or downstream references present"
   exit 1
 fi
 
