@@ -1,0 +1,17 @@
+# codex minimal .zshrc
+# Interactive scope only. Stage 1 and later layers are loaded from CODEX_ROOT.
+
+case $- in
+  *i*) ;;
+  *) return 0 2>/dev/null || exit 0 ;;
+esac
+
+: "${CODEX_ROOT:=${XDG_DATA_HOME:-$HOME/.local/share}/codex/current}"
+bootstrap_state="${XDG_STATE_HOME:-$HOME/.local/state}/codex/bootstrap"
+[ -r "$CODEX_ROOT/10-terminal/init.sh" ] && [ -f "$bootstrap_state/10-terminal.ready" ] && . "$CODEX_ROOT/10-terminal/init.sh"
+[ -r "$CODEX_ROOT/20-agent/init.sh" ] && [ -f "$bootstrap_state/20-agent.ready" ] && . "$CODEX_ROOT/20-agent/init.sh"
+
+local_zsh="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/local.zsh"
+[ -r "$local_zsh" ] && . "$local_zsh"
+
+PROMPT='%n@%m:%~%# '

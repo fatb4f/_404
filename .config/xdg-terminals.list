@@ -1,6 +1,0 @@
-# User override, highest priority first.
-kitty-zsh.desktop
-
-# Exclude known non-target terminal entries from fallback selection.
--org.kde.yakuake.desktop
--foot-server.desktop

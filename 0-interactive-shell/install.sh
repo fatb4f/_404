@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+. "$ROOT/policy/lib/fs.sh"
+
+: "${CODEX_ROOT:?CODEX_ROOT is required}"
+: "${CODEX_DRY_RUN:=0}"
+
+codex_stage_require_ready "00-shell"
+
+if ! command -v zsh >/dev/null 2>&1; then
+  if ! codex_install_pkg zsh; then
+    printf >&2 'zsh not found and could not be installed\n'
+    exit 127
+  fi
+fi
+
+install_file() {
+  src=$1
+  dst=$2
+  mode=$3
+
+  printf 'activate %-22s %s -> %s\n' "interactive-shell" "${src#$ROOT/}" "$dst"
+  [ "$CODEX_DRY_RUN" -eq 1 ] && return 0
+  mkdir -p "$(dirname "$dst")"
+  atomic_copy_file "$src" "$dst" "$mode"
+}
+
+install_file "$ROOT/interactive-shell/files/zshenv" "$HOME/.zshenv" 0644
+install_file "$ROOT/interactive-shell/files/zshrc" "$HOME/.zshrc" 0644
+
+codex_stage_mark_ready "interactive-shell"

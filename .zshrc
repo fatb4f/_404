@@ -1,5 +1,0 @@
-export ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
-
-if [[ -r "$ZDOTDIR/.zshrc" ]]; then
-  source "$ZDOTDIR/.zshrc"
-fi

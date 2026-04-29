@@ -1,9 +1,0 @@
-# Keep liquidprompt on prompt rendering only. ble.sh remains the line editor,
-# and Kitty's shell integration keeps prompt marks/output hooks.
-
-LP_ENABLE_RUNTIME=0
-LP_ENABLE_RUNTIME_BELL=0
-LP_ENABLE_TITLE_COMMAND=0
-LP_ENABLE_TITLE=0
-LP_ENABLE_SCREEN_TITLE=0
-LP_ENABLE_TMUX_TITLE_PANES=0

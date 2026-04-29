@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -eu
+
+: "${CODEX_AGENT_PREFIX:=${CODEX_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/codex/current}}"
+. "$CODEX_AGENT_PREFIX/20-agent/init.sh"
+shell_snapshot "$@"
