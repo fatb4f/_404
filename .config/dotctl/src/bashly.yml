@@ -105,3 +105,18 @@ commands:
 
   - name: provision
     help: Run the phase-0 provisioning handoff
+
+  - name: codex
+    help: Codex bootstrap and policy helpers
+    commands:
+      - name: bootstrap
+        help: Project Codex config, hooks, and bootstrap evidence
+        filename: codex_bootstrap_command.sh
+
+      - name: doctor
+        help: Check Codex bootstrap state
+        filename: codex_doctor_command.sh
+
+      - name: env
+        help: Print deterministic Codex task environment
+        filename: codex_env_command.sh
