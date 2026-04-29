@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# codex deterministic PATH baseline
-# Stage 0 shell scope. This is sourced from $CODEX_ROOT/00-shell/init.sh.
+# stage deterministic PATH baseline
+# Stage 0 shell scope. This is sourced from $STAGE_ROOT/00-shell/init.sh.
 
 _path_prepend() {
   case ":$PATH:" in

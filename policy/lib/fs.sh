@@ -6,18 +6,18 @@ xdg_data_home() { printf '%s\n' "${XDG_DATA_HOME:-$HOME/.local/share}"; }
 xdg_state_home() { printf '%s\n' "${XDG_STATE_HOME:-$HOME/.local/state}"; }
 xdg_cache_home() { printf '%s\n' "${XDG_CACHE_HOME:-$HOME/.cache}"; }
 
-codex_state_dir() { printf '%s/codex\n' "$(xdg_state_home)"; }
-codex_data_dir() { printf '%s/codex\n' "$(xdg_data_home)"; }
-codex_releases_dir() { printf '%s/releases\n' "$(codex_data_dir)"; }
-codex_current_root() { printf '%s/current\n' "$(codex_data_dir)"; }
-codex_release_root() { printf '%s/releases/%s\n' "$(codex_data_dir)" "${1:?activation id required}"; }
-codex_bootstrap_state_dir() { printf '%s/bootstrap\n' "$(codex_state_dir)"; }
-codex_stage_ready_path() { printf '%s/%s.ready\n' "$(codex_bootstrap_state_dir)" "${1:?stage required}"; }
+state_dir() { printf '%s/_404\n' "$(xdg_state_home)"; }
+data_dir() { printf '%s/_404\n' "$(xdg_data_home)"; }
+releases_dir() { printf '%s/releases\n' "$(data_dir)"; }
+current_root() { printf '%s/current\n' "$(data_dir)"; }
+release_root() { printf '%s/releases/%s\n' "$(data_dir)" "${1:?activation id required}"; }
+bootstrap_state_dir() { printf '%s/bootstrap\n' "$(state_dir)"; }
+stage_ready_path() { printf '%s/%s.ready\n' "$(bootstrap_state_dir)" "${1:?stage required}"; }
 
-codex_stage_require_ready() {
-  marker=$(codex_stage_ready_path "$1")
+stage_require_ready() {
+  marker=$(stage_ready_path "$1")
   [ -f "$marker" ] || {
-    if [ "${CODEX_DRY_RUN:-0}" -eq 1 ]; then
+    if [ "${DRY_RUN:-0}" -eq 1 ]; then
       printf '[dry-run] would require stage ready marker: %s\n' "$marker"
       return 0
     fi
@@ -26,9 +26,9 @@ codex_stage_require_ready() {
   }
 }
 
-codex_stage_mark_ready() {
-  marker=$(codex_stage_ready_path "$1")
-  if [ "${CODEX_DRY_RUN:-0}" -eq 1 ]; then
+stage_mark_ready() {
+  marker=$(stage_ready_path "$1")
+  if [ "${DRY_RUN:-0}" -eq 1 ]; then
     printf '[dry-run] would mark stage ready: %s\n' "$marker"
     return 0
   fi
@@ -53,37 +53,37 @@ backup_path_for() {
   printf '%s/%s\n' "$backup_root" "$rel"
 }
 
-codex_relpath_ok() {
+relpath_ok() {
   case "$1" in
     ""|/*|*../*|../*) return 1 ;;
     *) return 0 ;;
   esac
 }
 
-codex_require_file() {
+require_file() {
   root=$1
   rel=$2
 
-  codex_relpath_ok "$rel" || return 2
+  relpath_ok "$rel" || return 2
 
   path="$root/$rel"
   [ -r "$path" ] || return 1
   printf '%s\n' "$path"
 }
 
-codex_source_optional() {
+source_optional() {
   root=$1
   rel=$2
 
-  path=$(codex_require_file "$root" "$rel") || return 0
+  path=$(require_file "$root" "$rel") || return 0
   . "$path"
 }
 
-codex_source_required() {
+source_required() {
   root=$1
   rel=$2
 
-  path=$(codex_require_file "$root" "$rel") || return 1
+  path=$(require_file "$root" "$rel") || return 1
   . "$path"
 }
 
@@ -119,7 +119,7 @@ write_atomic_text_file() {
   mv -f "$tmp" "$target"
 }
 
-codex_install_pkg() {
+install_pkg() {
   pkg=$1
 
   if [ "$(id -u)" -eq 0 ]; then
@@ -131,7 +131,7 @@ codex_install_pkg() {
   fi
 
   if command -v apt-get >/dev/null 2>&1; then
-    [ "${CODEX_DRY_RUN:-0}" -eq 1 ] && {
+    [ "${DRY_RUN:-0}" -eq 1 ] && {
       printf 'would install pkg: %s via apt-get\n' "$pkg"
       return 0
     }
@@ -141,7 +141,7 @@ codex_install_pkg() {
   fi
 
   if command -v pacman >/dev/null 2>&1; then
-    [ "${CODEX_DRY_RUN:-0}" -eq 1 ] && {
+    [ "${DRY_RUN:-0}" -eq 1 ] && {
       printf 'would install pkg: %s via pacman\n' "$pkg"
       return 0
     }
@@ -150,7 +150,7 @@ codex_install_pkg() {
   fi
 
   if command -v dnf >/dev/null 2>&1; then
-    [ "${CODEX_DRY_RUN:-0}" -eq 1 ] && {
+    [ "${DRY_RUN:-0}" -eq 1 ] && {
       printf 'would install pkg: %s via dnf\n' "$pkg"
       return 0
     }
@@ -159,7 +159,7 @@ codex_install_pkg() {
   fi
 
   if command -v apk >/dev/null 2>&1; then
-    [ "${CODEX_DRY_RUN:-0}" -eq 1 ] && {
+    [ "${DRY_RUN:-0}" -eq 1 ] && {
       printf 'would install pkg: %s via apk\n' "$pkg"
       return 0
     }

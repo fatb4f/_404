@@ -1,4 +1,4 @@
-# codex-v0-example
+# _404-v0-example
 
 Surgical v0 with an activated root prefix and ordered load stages.
 
@@ -28,5 +28,5 @@ The repository already models this as domain-local installers:
 - `<domain>/tests/`: domain-local regression fixtures.
 
 Runtime state/cache/runtime directories are declared in CUE. The activated tree is
-rooted at `$XDG_DATA_HOME/codex/releases/<activation-id>/` and exposed through
-`$XDG_DATA_HOME/codex/current`.
+rooted at `$XDG_DATA_HOME/_404/releases/<activation-id>/` and exposed through
+`$XDG_DATA_HOME/_404/current`.

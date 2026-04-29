@@ -1,8 +1,8 @@
 # Legacy reference manifest. The active installer now dispatches to
-# domain-local install scripts and stages into $XDG_DATA_HOME/codex/current.
+# domain-local install scripts and stages into $XDG_DATA_HOME/_404/current.
 # domain|source|target-key|mode
 interactive-shell|interactive-shell/files/zshenv|home:.zshenv|0644
 interactive-shell|interactive-shell/files/zshrc|home:.zshrc|0644
 terminal|1-terminal/files/kitty.conf|xdg_config:kitty/kitty.conf|0644
-noninteractive-shell|noninteractive-shell/files/env.sh|xdg_config:codex/shell/env.sh|0644
-noninteractive-shell|noninteractive-shell/files/path.sh|xdg_config:codex/shell/path.sh|0644
+noninteractive-shell|noninteractive-shell/files/env.sh|xdg_config:_404/shell/env.sh|0644
+noninteractive-shell|noninteractive-shell/files/path.sh|xdg_config:_404/shell/path.sh|0644

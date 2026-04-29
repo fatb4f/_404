@@ -4,10 +4,10 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/policy/lib/fs.sh"
 
-: "${CODEX_AGENT_PREFIX:=${CODEX_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/codex/current}}"
+: "${CODEX_AGENT_PREFIX:=${CODEX_ROOT:-${XDG_DATA_HOME:-$HOME/.local/share}/_404/current}}"
 : "${CODEX_DRY_RUN:=0}"
 
-codex_stage_require_ready "10-terminal"
+stage_require_ready "10-terminal"
 
 source_dir="$ROOT/2-agent/files"
 target_dir="$CODEX_AGENT_PREFIX/20-agent"
@@ -42,4 +42,4 @@ install_link() {
 install_link "$CODEX_AGENT_PREFIX/20-agent/bin/shell_tool" "$HOME/.local/bin/shell_tool"
 install_link "$CODEX_AGENT_PREFIX/20-agent/bin/shell_snapshot" "$HOME/.local/bin/shell_snapshot"
 
-codex_stage_mark_ready "20-agent"
+stage_mark_ready "20-agent"

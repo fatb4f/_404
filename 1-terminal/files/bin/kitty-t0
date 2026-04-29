@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 set -eu
 
-: "${CODEX_ROOT:?CODEX_ROOT is required}"
-. "$CODEX_ROOT/10-terminal/init.sh"
+: "${STAGE_ROOT:?STAGE_ROOT is required}"
+. "$STAGE_ROOT/10-terminal/init.sh"
 kitty_t0 "$@"

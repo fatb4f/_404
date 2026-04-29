@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# codex terminal wrapper functions
+# stage terminal wrapper functions
 
 kitty_launch_with_cwd() {
   cwd="${1:-$PWD}"

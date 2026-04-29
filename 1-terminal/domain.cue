@@ -1,6 +1,6 @@
 package terminal
 
-import "codex.local/schema"
+import "stage.local/schema"
 
 domain: schema.#Domain & {
   id: "terminal"
@@ -10,7 +10,7 @@ domain: schema.#Domain & {
     id: "terminal-init"
     class: "config"
     source: "1-terminal/files/init.sh"
-    target: "$CODEX_ROOT/10-terminal/init.sh"
+    target: "$STAGE_ROOT/10-terminal/init.sh"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -19,7 +19,7 @@ domain: schema.#Domain & {
     id: "terminal-env"
     class: "config"
     source: "1-terminal/files/env.sh"
-    target: "$CODEX_ROOT/10-terminal/env.sh"
+    target: "$STAGE_ROOT/10-terminal/env.sh"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -28,7 +28,7 @@ domain: schema.#Domain & {
     id: "terminal-functions"
     class: "config"
     source: "1-terminal/files/functions.sh"
-    target: "$CODEX_ROOT/10-terminal/functions.sh"
+    target: "$STAGE_ROOT/10-terminal/functions.sh"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -37,7 +37,7 @@ domain: schema.#Domain & {
     id: "kitty-conf"
     class: "config"
     source: "1-terminal/files/kitty.conf"
-    target: "$CODEX_ROOT/10-terminal/kitty/kitty.conf"
+    target: "$STAGE_ROOT/10-terminal/kitty/kitty.conf"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -46,7 +46,7 @@ domain: schema.#Domain & {
     id: "kitty-overrides"
     class: "config"
     source: "1-terminal/files/overrides.kitty.conf"
-    target: "$CODEX_ROOT/10-terminal/kitty/overrides.kitty.conf"
+    target: "$STAGE_ROOT/10-terminal/kitty/overrides.kitty.conf"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -55,7 +55,7 @@ domain: schema.#Domain & {
     id: "kitty-t0"
     class: "config"
     source: "1-terminal/files/bin/kitty-t0"
-    target: "$CODEX_ROOT/10-terminal/bin/kitty-t0"
+    target: "$STAGE_ROOT/10-terminal/bin/kitty-t0"
     mode: "0755"
     activation: "atomic-copy"
     generated: true
@@ -64,7 +64,7 @@ domain: schema.#Domain & {
     id: "kitty-launch-with-cwd"
     class: "config"
     source: "1-terminal/files/bin/kitty-launch-with-cwd"
-    target: "$CODEX_ROOT/10-terminal/bin/kitty-launch-with-cwd"
+    target: "$STAGE_ROOT/10-terminal/bin/kitty-launch-with-cwd"
     mode: "0755"
     activation: "atomic-copy"
     generated: true
@@ -73,7 +73,7 @@ domain: schema.#Domain & {
     id: "kitty-launch-desktop"
     class: "config"
     source: "1-terminal/files/bin/kitty-launch-desktop"
-    target: "$CODEX_ROOT/10-terminal/bin/kitty-launch-desktop"
+    target: "$STAGE_ROOT/10-terminal/bin/kitty-launch-desktop"
     mode: "0755"
     activation: "atomic-copy"
     generated: true
@@ -81,8 +81,8 @@ domain: schema.#Domain & {
   }, {
     id: "kitty-desktop"
     class: "config"
-    source: "1-terminal/files/applications/codex-kitty.desktop"
-    target: "$CODEX_ROOT/10-terminal/applications/codex-kitty.desktop"
+    source: "1-terminal/files/applications/stage-kitty.desktop"
+    target: "$STAGE_ROOT/10-terminal/applications/stage-kitty.desktop"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -90,8 +90,8 @@ domain: schema.#Domain & {
   }, {
     id: "kitty-workflow-desktop"
     class: "config"
-    source: "1-terminal/files/applications/codex-kitty-workflow.desktop"
-    target: "$CODEX_ROOT/10-terminal/applications/codex-kitty-workflow.desktop"
+    source: "1-terminal/files/applications/stage-kitty-workflow.desktop"
+    target: "$STAGE_ROOT/10-terminal/applications/stage-kitty-workflow.desktop"
     mode: "0644"
     activation: "atomic-copy"
     generated: true
@@ -108,19 +108,19 @@ domain: schema.#Domain & {
   checks: [
     {
       id: "kitty-config-present"
-      command: "test -f ${CODEX_ROOT:?}/10-terminal/kitty/kitty.conf"
+      command: "test -f ${STAGE_ROOT:?}/10-terminal/kitty/kitty.conf"
       severity: "degraded"
       provides: ["terminal.config.valid"]
     },
     {
       id: "terminal-load-order"
-      command: "test -f ${CODEX_ROOT:?}/10-terminal/init.sh && test -f ${CODEX_ROOT:?}/10-terminal/env.sh && test -f ${CODEX_ROOT:?}/10-terminal/functions.sh && grep -q 'bootstrap/10-terminal.ready' ${CODEX_ROOT:?}/10-terminal/init.sh"
+      command: "test -f ${STAGE_ROOT:?}/10-terminal/init.sh && test -f ${STAGE_ROOT:?}/10-terminal/env.sh && test -f ${STAGE_ROOT:?}/10-terminal/functions.sh && grep -q 'bootstrap/10-terminal.ready' ${STAGE_ROOT:?}/10-terminal/init.sh"
       severity: "degraded"
       provides: ["terminal.load-order"]
     },
     {
       id: "terminal-stage-ready"
-      command: "test -f ${XDG_STATE_HOME:-$HOME/.local/state}/codex/bootstrap/10-terminal.ready"
+      command: "test -f ${XDG_STATE_HOME:-$HOME/.local/state}/_404/bootstrap/10-terminal.ready"
       severity: "degraded"
       provides: ["terminal.ready"]
     },

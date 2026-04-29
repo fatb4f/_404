@@ -4,7 +4,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/policy/lib/fs.sh"
 
-: "${CODEX_DRY_RUN:=0}"
+: "${DRY_RUN:=0}"
 
 if ! command -v zsh >/dev/null 2>&1; then
   printf >&2 'zsh not found on PATH\n'
@@ -17,7 +17,7 @@ install_file() {
   mode=$3
 
   printf 'activate %-22s %s -> %s\n' "interactive-shell" "${src#$ROOT/}" "$dst"
-  [ "$CODEX_DRY_RUN" -eq 1 ] && return 0
+  [ "$DRY_RUN" -eq 1 ] && return 0
   mkdir -p "$(dirname "$dst")"
   atomic_copy_file "$src" "$dst" "$mode"
 }

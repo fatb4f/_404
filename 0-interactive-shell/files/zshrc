@@ -1,4 +1,4 @@
-# codex minimal .zshrc
+# stage minimal .zshrc
 # Interactive scope only. Keep this domain isolated.
 
 case $- in

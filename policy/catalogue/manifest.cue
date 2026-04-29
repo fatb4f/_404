@@ -1,6 +1,6 @@
 package catalogue
 
-import "codex.local/schema"
+import "stage.local/schema"
 
 entries: [...schema.#ManifestEntry]
 

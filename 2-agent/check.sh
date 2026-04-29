@@ -4,10 +4,10 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 . "$ROOT/policy/lib/fs.sh"
 . "$ROOT/policy/lib/report.sh"
 
-CODEX_ROOT="${CODEX_ROOT:-$(codex_current_root)}"
+CODEX_ROOT="${CODEX_ROOT:-$(current_root)}"
 CODEX_AGENT_PREFIX="${CODEX_AGENT_PREFIX:-${CODEX_ROOT}}"
 
-if codex_stage_require_ready "10-terminal" && codex_stage_require_ready "20-agent"; then
+if stage_require_ready "10-terminal" && stage_require_ready "20-agent"; then
   emit_check agent stage-ready true ok "terminal and agent handoff markers present"
 else
   emit_check agent stage-ready false degraded "agent handoff marker missing"

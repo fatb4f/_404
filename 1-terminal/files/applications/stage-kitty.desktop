@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=codex Kitty
+Name=stage Kitty
 Exec=kitty --start-as maximized /usr/bin/zsh -l
 TryExec=kitty
 Terminal=false
