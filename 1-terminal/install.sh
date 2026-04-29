@@ -13,24 +13,6 @@ stage_require_ready "interactive-shell"
 source_dir="$ROOT/1-terminal/files"
 target_dir="$STAGE_ROOT/10-terminal"
 
-terminal_kitty_release_asset_url() {
-  asset_name=$1
-
-  command -v curl >/dev/null 2>&1 || return 127
-  command -v python3 >/dev/null 2>&1 || return 127
-
-  curl -fsSL https://api.github.com/repos/kovidgoyal/kitty/releases/latest |
-    python3 -c 'import json, sys
-asset_name = sys.argv[1]
-payload = json.load(sys.stdin)
-for asset in payload.get("assets", []):
-    if asset.get("name") == asset_name:
-        print(asset.get("browser_download_url", ""))
-        raise SystemExit(0)
-raise SystemExit(1)
-' "$asset_name"
-}
-
 terminal_ensure_kitty() {
   if command -v kitty >/dev/null 2>&1; then
     return 0
@@ -40,17 +22,7 @@ terminal_ensure_kitty() {
     return 0
   fi
 
-  if [ "${KITTY_INSTALL_METHOD:-}" = "curl" ]; then
-    asset_name="${KITTY_RELEASE_ASSET:-kitty-linux-x86_64.tar.xz}"
-    asset_url=$(terminal_kitty_release_asset_url "$asset_name") || {
-      printf >&2 'unable to resolve kitty release asset: %s\n' "$asset_name"
-      return 127
-    }
-    printf 'resolved kitty asset: %s\n' "$asset_url"
-    return 0
-  fi
-
-  printf >&2 'kitty not found and no package manager available\n'
+  printf >&2 'kitty not found and package manager install failed\n'
   return 127
 }
 

@@ -68,13 +68,27 @@ domain: schema.#Domain & {
 	}]
 
 	provides: [
+		"agent.npm",
 		"agent.loadable",
 		"agent.shell-tool",
 		"agent.shell-snapshot",
+		"agent.codex",
 		"agent.ready",
 	]
 
 	checks: [
+		{
+			id:       "agent-npm"
+			command:  "command -v npm >/dev/null 2>&1"
+			severity: "degraded"
+			provides: ["agent.npm"]
+		},
+		{
+			id:       "agent-codex"
+			command:  "command -v codex >/dev/null 2>&1"
+			severity: "degraded"
+			provides: ["agent.codex"]
+		},
 		{
 			id:       "agent-load-order"
 			command:  "test -f ${CODEX_AGENT_PREFIX:?}/20-agent/init.sh && test -f ${CODEX_AGENT_PREFIX:?}/20-agent/functions.sh && grep -q 'bootstrap/20-agent.ready' ${CODEX_AGENT_PREFIX:?}/20-agent/init.sh"

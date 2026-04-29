@@ -33,6 +33,20 @@ done
 
 [ "$status" -eq 0 ] || exit "$status"
 
+if command -v npm >/dev/null 2>&1; then
+  emit_check agent npm-available true ok "npm found on PATH"
+else
+  emit_check agent npm-available false fatal "npm not found on PATH"
+  exit 1
+fi
+
+if command -v codex >/dev/null 2>&1; then
+  emit_check agent codex-available true ok "codex found on PATH"
+else
+  emit_check agent codex-available false fatal "codex not found on PATH"
+  exit 1
+fi
+
 if sh -n \
   "$CODEX_AGENT_PREFIX/20-agent/init.sh" \
   "$CODEX_AGENT_PREFIX/20-agent/env.sh" \

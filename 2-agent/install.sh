@@ -9,6 +9,21 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 stage_require_ready "10-terminal"
 
+if ! command -v npm >/dev/null 2>&1; then
+  if ! install_pkg npm; then
+    printf >&2 'npm not found and could not be installed\n'
+    exit 127
+  fi
+fi
+
+if ! command -v codex >/dev/null 2>&1; then
+  if [ "${CODEX_DRY_RUN}" -eq 1 ]; then
+    printf 'would install codex via npm\n'
+  else
+    npm install -g --prefix "$HOME/.local" @openai/codex
+  fi
+fi
+
 source_dir="$ROOT/2-agent/files"
 target_dir="$CODEX_AGENT_PREFIX/20-agent"
 
