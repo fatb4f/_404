@@ -9,10 +9,8 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 codex_stage_require_ready "00-shell"
 
 if ! command -v zsh >/dev/null 2>&1; then
-  if ! codex_install_pkg zsh; then
-    printf >&2 'zsh not found and could not be installed\n'
-    exit 127
-  fi
+  printf >&2 'zsh not found on PATH\n'
+  exit 127
 fi
 
 install_file() {

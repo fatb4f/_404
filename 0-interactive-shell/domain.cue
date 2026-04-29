@@ -56,7 +56,7 @@ domain: schema.#Domain & {
   checks: [
     {
       id: "zshenv-parse"
-      command: "zsh -n $HOME/.zshenv && grep -q 'bootstrap/00-shell.ready' $HOME/.zshenv"
+      command: "zsh -n $HOME/.zshenv && grep -q 'bootstrap/00-shell.ready' $HOME/.zshenv && grep -q 'codex_root/00-shell/init.sh' $HOME/.zshenv"
       severity: "fatal"
       provides: ["shell.interactive.minimal"]
     },

@@ -8,8 +8,6 @@
 
 export XDG_DATA_HOME XDG_CONFIG_HOME XDG_STATE_HOME XDG_CACHE_HOME
 
-: "${CODEX_ROOT:=$XDG_DATA_HOME/codex/current}"
-export CODEX_ROOT
-
 bootstrap_ready="$XDG_STATE_HOME/codex/bootstrap/00-shell.ready"
-[ -r "$CODEX_ROOT/00-shell/init.sh" ] && [ -f "$bootstrap_ready" ] && . "$CODEX_ROOT/00-shell/init.sh"
+codex_root="${XDG_DATA_HOME}/codex/current"
+[ -r "$codex_root/00-shell/init.sh" ] && [ -f "$bootstrap_ready" ] && . "$codex_root/00-shell/init.sh"

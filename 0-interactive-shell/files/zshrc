@@ -6,8 +6,6 @@ case $- in
   *) return 0 2>/dev/null || exit 0 ;;
 esac
 
-: "${CODEX_ROOT:=${XDG_DATA_HOME:-$HOME/.local/share}/codex/current}"
-
 local_zsh="${XDG_CONFIG_HOME:-$HOME/.config}/zsh/local.zsh"
 [ -r "$local_zsh" ] && . "$local_zsh"
 
