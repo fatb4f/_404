@@ -15,9 +15,9 @@ DOMAIN_OUTPUT_DIR='generated/postinit/codex'
 
 : "${DOTS_REPO:=src}"
 : "${DOTS_DIR:=dots}"
-: "${DOTS_HOME:=$HOME/$DOTS_REPO/$DOTS_DIR}"
+: "${DOTS_HOME:=$XDG_DATA_HOME/_404/dots}"
 : "${XDG_CONFIG_HOME:=$DOTS_HOME/.config}"
-: "${XDG_DATA_HOME:=$DOTS_HOME/.local/share}"
+: "${XDG_DATA_HOME:=$HOME/.local/share}"
 : "${XDG_OPT_HOME:=$DOTS_HOME/.local/opt}"
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"

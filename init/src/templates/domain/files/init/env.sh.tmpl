@@ -1,11 +1,6 @@
 #!/usr/bin/env sh
-# stage minimal .bashrc
-# Interactive scope only. Keep this domain isolated and quiet.
-
-case $- in
-  *i*) ;;
-  *) return 0 2>/dev/null || exit 0 ;;
-esac
+# canonical shell init env.
+# shellcheck shell=sh
 
 : "${XDG_DATA_HOME:=$HOME/.local/share}"
 : "${DOTS_HOME:=$XDG_DATA_HOME/_404/dots}"
@@ -14,8 +9,10 @@ esac
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+: "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
+[ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
 : "${INIT_ROOT:=$DOTS_HOME/.config/init}"
 : "${INIT_LOADER:=$INIT_ROOT/loader.sh}"
+: "${BASH_ENV:=$DOTS_HOME/.bash_env}"
 
-[ -r "$INIT_LOADER" ] && . "$INIT_LOADER"
-[ -r "$XDG_CONFIG_HOME/_404/env.sh" ] && . "$XDG_CONFIG_HOME/_404/env.sh"
+export DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME TOOL_PREFIX_HOME INIT_ROOT INIT_LOADER BASH_ENV

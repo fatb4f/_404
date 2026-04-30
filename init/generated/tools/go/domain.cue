@@ -20,9 +20,9 @@ domain: schema.#Domain & {
 	roots: {
 		dots_repo:  "src"
 		dots_dir:   "dots"
-		dots:       "$HOME/$DOTS_REPO/$DOTS_DIR"
+		dots:       "$XDG_DATA_HOME/_404/dots"
 		xdg_config: "$DOTS_HOME/.config"
-		xdg_data:   "$DOTS_HOME/.local/share"
+		xdg_data:   "$HOME/.local/share"
 		xdg_opt:    "$DOTS_HOME/.local/opt"
 		xdg_state:  "$HOME/.local/state"
 		xdg_cache:  "$HOME/.cache"

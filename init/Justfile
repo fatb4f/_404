@@ -1,6 +1,8 @@
 set shell := ["sh", "-eu", "-c"]
 
 python := "python3"
+repo_root := ".."
+dots_root := "../dots"
 domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex generated/tools/go generated/tools/cue"
 
 # Compose optional domains.d fragments into a materialized seed.
@@ -14,9 +16,9 @@ gen: compose-seed
 # Parse generated shell and compile generator.
 check-generated:
 	{{python}} -m py_compile src/gen/domain.py src/gen/compose_seed.py
-	find generated src -path './.git' -prune -o \( -name '*.sh' -o -name 'zshenv' -o -name 'zshrc' -o -name 'bash_profile' -o -name 'bashrc' -o -name '_404-codex' \) -print | xargs -r sh -n
-	sh -n generated/postinit/codex/files/hooks/session-init.sh generated/postinit/codex/files/hooks/pre-tool-use.sh generated/postinit/codex/files/hooks/post-tool-use.sh generated/postinit/codex/files/hooks/stop.sh generated/postinit/codex/files/bin/_404-codex dots/.config/codex/hooks/session-init.sh dots/.config/codex/hooks/pre-tool-use.sh dots/.config/codex/hooks/post-tool-use.sh dots/.config/codex/hooks/stop.sh dots/.local/bin/_404-codex
-	bash -n generated/init/noninteractive-shell/files/bash_profile generated/init/noninteractive-shell/files/bashrc
+	find generated src {{dots_root}} -path './.git' -prune -o \( -name '*.sh' -o -name 'zshenv' -o -name 'zshrc' -o -name 'bash_profile' -o -name 'bashrc' -o -name 'bash_env' -o -name 'profile' -o -name '_404-codex' \) -print | xargs -r sh -n
+	sh -n generated/postinit/codex/files/hooks/session-init.sh generated/postinit/codex/files/hooks/pre-tool-use.sh generated/postinit/codex/files/hooks/post-tool-use.sh generated/postinit/codex/files/hooks/stop.sh generated/postinit/codex/files/bin/_404-codex {{dots_root}}/.config/codex/hooks/session-init.sh {{dots_root}}/.config/codex/hooks/pre-tool-use.sh {{dots_root}}/.config/codex/hooks/post-tool-use.sh {{dots_root}}/.config/codex/hooks/stop.sh {{dots_root}}/.local/bin/_404-codex
+	bash -n generated/init/noninteractive-shell/files/bash_profile generated/init/noninteractive-shell/files/bashrc generated/init/noninteractive-shell/files/bash_env generated/init/noninteractive-shell/files/profile
 	{{python}} -c 'import pathlib, tomllib; tomllib.loads(pathlib.Path("generated/postinit/codex/files/config.toml").read_text())'
 
 # Validate that generated artifacts match the seed.

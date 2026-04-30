@@ -22,9 +22,9 @@ domain: schema.#Domain & {
 	roots: {
 		dots_repo:  "src"
 		dots_dir:   "dots"
-		dots:       "$HOME/$DOTS_REPO/$DOTS_DIR"
+		dots:       "$XDG_DATA_HOME/_404/dots"
 		xdg_config: "$DOTS_HOME/.config"
-		xdg_data:   "$DOTS_HOME/.local/share"
+		xdg_data:   "$HOME/.local/share"
 		xdg_opt:    "$DOTS_HOME/.local/opt"
 		xdg_state:  "$HOME/.local/state"
 		xdg_cache:  "$HOME/.cache"
@@ -65,9 +65,41 @@ domain: schema.#Domain & {
 		"role": "projected"
 	},
 	{
+		"id": "loader.sh",
+		"source": "files/init/loader.sh",
+		"target": "$DOTS_HOME/.config/init/loader.sh",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "check.sh",
+		"source": "files/init/check.sh",
+		"target": "$DOTS_HOME/.config/init/check.sh",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "env.sh",
+		"source": "files/init/env.sh",
+		"target": "$DOTS_HOME/.config/init/env.sh",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "path.sh",
+		"source": "files/init/path.sh",
+		"target": "$DOTS_HOME/.config/init/path.sh",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
 		"id": "bash_profile",
 		"source": "files/bash_profile",
-		"target": "$HOME/.bash_profile",
+		"target": "$DOTS_HOME/.bash_profile",
 		"mode": "0644",
 		"activation": "atomic-copy",
 		"role": "projected"
@@ -75,7 +107,23 @@ domain: schema.#Domain & {
 	{
 		"id": "bashrc",
 		"source": "files/bashrc",
-		"target": "$HOME/.bashrc",
+		"target": "$DOTS_HOME/.bashrc",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "bash_env",
+		"source": "files/bash_env",
+		"target": "$DOTS_HOME/.bash_env",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "profile",
+		"source": "files/profile",
+		"target": "$DOTS_HOME/.profile",
 		"mode": "0644",
 		"activation": "atomic-copy",
 		"role": "projected"
@@ -105,12 +153,12 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "files-present",
-		"command": "test -f $DOMAIN_PREFIX/init.sh && test -f $DOMAIN_PREFIX/env.sh && test -f $DOMAIN_PREFIX/path.sh && test -f $DOMAIN_PREFIX/require.sh && test -f $XDG_CONFIG_HOME/_404/env.sh && test -f $HOME/.bash_profile && test -f $HOME/.bashrc",
+		"command": "test -f $DOMAIN_PREFIX/init.sh && test -f $DOMAIN_PREFIX/env.sh && test -f $DOMAIN_PREFIX/path.sh && test -f $DOMAIN_PREFIX/require.sh && test -f $XDG_CONFIG_HOME/_404/env.sh && test -f $DOTS_HOME/.config/init/loader.sh && test -f $DOTS_HOME/.config/init/check.sh && test -f $DOTS_HOME/.config/init/env.sh && test -f $DOTS_HOME/.config/init/path.sh && test -f $DOTS_HOME/.bash_profile && test -f $DOTS_HOME/.bashrc && test -f $DOTS_HOME/.bash_env && test -f $DOTS_HOME/.profile",
 		"severity": "fatal"
 	},
 	{
 		"id": "shell-parse",
-		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/path.sh $DOMAIN_PREFIX/require.sh $XDG_CONFIG_HOME/_404/env.sh $HOME/.bash_profile $HOME/.bashrc",
+		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/path.sh $DOMAIN_PREFIX/require.sh $XDG_CONFIG_HOME/_404/env.sh $DOTS_HOME/.config/init/loader.sh $DOTS_HOME/.config/init/check.sh $DOTS_HOME/.config/init/env.sh $DOTS_HOME/.config/init/path.sh $DOTS_HOME/.bash_profile $DOTS_HOME/.bashrc $DOTS_HOME/.bash_env $DOTS_HOME/.profile",
 		"severity": "fatal"
 	},
 	{
@@ -125,12 +173,27 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "bash_profile-parse",
-		"command": "test -f $HOME/.bash_profile && sh -n $HOME/.bash_profile",
+		"command": "test -f $DOTS_HOME/.bash_profile && sh -n $DOTS_HOME/.bash_profile",
 		"severity": "fatal"
 	},
 	{
 		"id": "bashrc-parse",
-		"command": "test -f $HOME/.bashrc && sh -n $HOME/.bashrc",
+		"command": "test -f $DOTS_HOME/.bashrc && sh -n $DOTS_HOME/.bashrc",
+		"severity": "fatal"
+	},
+	{
+		"id": "bash_env-parse",
+		"command": "test -f $DOTS_HOME/.bash_env && sh -n $DOTS_HOME/.bash_env",
+		"severity": "fatal"
+	},
+	{
+		"id": "profile-parse",
+		"command": "test -f $DOTS_HOME/.profile && sh -n $DOTS_HOME/.profile",
+		"severity": "fatal"
+	},
+	{
+		"id": "init-loader-parse",
+		"command": "test -f $DOTS_HOME/.config/init/loader.sh && sh -n $DOTS_HOME/.config/init/loader.sh && test -f $DOTS_HOME/.config/init/check.sh && sh -n $DOTS_HOME/.config/init/check.sh && test -f $DOTS_HOME/.config/init/env.sh && sh -n $DOTS_HOME/.config/init/env.sh && test -f $DOTS_HOME/.config/init/path.sh && sh -n $DOTS_HOME/.config/init/path.sh",
 		"severity": "fatal"
 	}
 ]

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# stage minimal .bashrc
+# stage minimal .zshrc
 # Interactive scope only. Keep this domain isolated and quiet.
 
 case $- in
@@ -19,3 +19,10 @@ esac
 
 [ -r "$INIT_LOADER" ] && . "$INIT_LOADER"
 [ -r "$XDG_CONFIG_HOME/_404/env.sh" ] && . "$XDG_CONFIG_HOME/_404/env.sh"
+
+local_zsh="${XDG_CONFIG_HOME}/zsh/local.zsh"
+[ -r "$local_zsh" ] && . "$local_zsh"
+
+[ -r "$INIT_LOADER" ] && . "$INIT_LOADER"
+
+PROMPT='%n@%m:%~%# '

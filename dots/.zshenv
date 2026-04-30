@@ -1,11 +1,6 @@
 #!/usr/bin/env sh
-# stage minimal .bashrc
-# Interactive scope only. Keep this domain isolated and quiet.
-
-case $- in
-  *i*) ;;
-  *) return 0 2>/dev/null || exit 0 ;;
-esac
+# generated-compatible minimal .zshenv
+# Keep this tiny, recoverable, and quiet.
 
 : "${XDG_DATA_HOME:=$HOME/.local/share}"
 : "${DOTS_HOME:=$XDG_DATA_HOME/_404/dots}"
@@ -19,3 +14,4 @@ esac
 
 [ -r "$INIT_LOADER" ] && . "$INIT_LOADER"
 [ -r "$XDG_CONFIG_HOME/_404/env.sh" ] && . "$XDG_CONFIG_HOME/_404/env.sh"
+[ -r "$INIT_LOADER" ] && . "$INIT_LOADER"

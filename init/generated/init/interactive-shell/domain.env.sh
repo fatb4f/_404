@@ -15,9 +15,9 @@ DOMAIN_OUTPUT_DIR='generated/init/interactive-shell'
 
 : "${DOTS_REPO:=src}"
 : "${DOTS_DIR:=dots}"
-: "${DOTS_HOME:=$HOME/$DOTS_REPO/$DOTS_DIR}"
+: "${DOTS_HOME:=$XDG_DATA_HOME/_404/dots}"
 : "${XDG_CONFIG_HOME:=$DOTS_HOME/.config}"
-: "${XDG_DATA_HOME:=$DOTS_HOME/.local/share}"
+: "${XDG_DATA_HOME:=$HOME/.local/share}"
 : "${XDG_OPT_HOME:=$DOTS_HOME/.local/opt}"
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
@@ -38,11 +38,11 @@ DOMAIN_REQUIRES_READY='00-shell'
 
 DOMAIN_FILES='files/env.sh|$DOMAIN_PREFIX/env.sh|0644
 files/init.sh|$DOMAIN_PREFIX/init.sh|0644
-files/zshenv|$HOME/.zshenv|0644
-files/zshrc|$HOME/.zshrc|0644'
+files/zshenv|$DOTS_HOME/.zshenv|0644
+files/zshrc|$DOTS_HOME/.zshrc|0644'
 DOMAIN_COPIES=''
 DOMAIN_LINKS=''
 DOMAIN_CHECKS='zsh-available|command -v zsh >/dev/null 2>&1|fatal
-zshenv-parse|test -f $HOME/.zshenv && sh -n $HOME/.zshenv|fatal
-zshrc-parse|test -f $HOME/.zshrc && sh -n $HOME/.zshrc|fatal
+zshenv-parse|test -f $DOTS_HOME/.zshenv && sh -n $DOTS_HOME/.zshenv|fatal
+zshrc-parse|test -f $DOTS_HOME/.zshrc && sh -n $DOTS_HOME/.zshrc|fatal
 stage-ready|test -f $XDG_STATE_HOME/_404/bootstrap/interactive-shell.ready|degraded'

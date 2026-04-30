@@ -22,9 +22,9 @@ domain: schema.#Domain & {
 	roots: {
 		dots_repo:  "src"
 		dots_dir:   "dots"
-		dots:       "$HOME/$DOTS_REPO/$DOTS_DIR"
+		dots:       "$XDG_DATA_HOME/_404/dots"
 		xdg_config: "$DOTS_HOME/.config"
-		xdg_data:   "$DOTS_HOME/.local/share"
+		xdg_data:   "$HOME/.local/share"
 		xdg_opt:    "$DOTS_HOME/.local/opt"
 		xdg_state:  "$HOME/.local/state"
 		xdg_cache:  "$HOME/.cache"
@@ -59,7 +59,7 @@ domain: schema.#Domain & {
 	{
 		"id": "zshenv",
 		"source": "files/zshenv",
-		"target": "$HOME/.zshenv",
+		"target": "$DOTS_HOME/.zshenv",
 		"mode": "0644",
 		"activation": "atomic-copy",
 		"role": "projected"
@@ -67,7 +67,7 @@ domain: schema.#Domain & {
 	{
 		"id": "zshrc",
 		"source": "files/zshrc",
-		"target": "$HOME/.zshrc",
+		"target": "$DOTS_HOME/.zshrc",
 		"mode": "0644",
 		"activation": "atomic-copy",
 		"role": "projected"
@@ -81,12 +81,12 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "zshenv-parse",
-		"command": "test -f $HOME/.zshenv && sh -n $HOME/.zshenv",
+		"command": "test -f $DOTS_HOME/.zshenv && sh -n $DOTS_HOME/.zshenv",
 		"severity": "fatal"
 	},
 	{
 		"id": "zshrc-parse",
-		"command": "test -f $HOME/.zshrc && sh -n $HOME/.zshrc",
+		"command": "test -f $DOTS_HOME/.zshrc && sh -n $DOTS_HOME/.zshrc",
 		"severity": "fatal"
 	},
 	{

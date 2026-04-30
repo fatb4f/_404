@@ -8,9 +8,9 @@ package schema
 #Roots: {
 	dots_repo:  string | *"src"
 	dots_dir:   string | *"dots"
-	dots:       string | *"$HOME/$DOTS_REPO/$DOTS_DIR"
+	dots:       string | *"$XDG_DATA_HOME/_404/dots"
 	xdg_config: string | *"$DOTS_HOME/.config"
-	xdg_data:   string | *"$DOTS_HOME/.local/share"
+	xdg_data:   string | *"$HOME/.local/share"
 	xdg_opt:    string | *"$DOTS_HOME/.local/opt"
 	xdg_state:  string | *"$HOME/.local/state"
 	xdg_cache:  string | *"$HOME/.cache"

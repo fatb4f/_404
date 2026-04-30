@@ -1,18 +1,16 @@
 #!/usr/bin/env sh
 # generated-compatible minimal .zshenv
-# Keep this tiny and recoverable.
+# Keep this tiny, recoverable, and quiet.
 
-: "${DOTS_REPO:=src}"
-: "${DOTS_DIR:=dots}"
-: "${DOTS_HOME:=$HOME/$DOTS_REPO/$DOTS_DIR}"
+: "${XDG_DATA_HOME:=$HOME/.local/share}"
+: "${DOTS_HOME:=$XDG_DATA_HOME/_404/dots}"
 : "${XDG_CONFIG_HOME:=$DOTS_HOME/.config}"
-: "${XDG_DATA_HOME:=$DOTS_HOME/.local/share}"
 : "${XDG_OPT_HOME:=$DOTS_HOME/.local/opt}"
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+: "${INIT_ROOT:=$DOTS_HOME/.config/init}"
+: "${INIT_LOADER:=$INIT_ROOT/loader.sh}"
 
-export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME
-
-bootstrap_env="${XDG_CONFIG_HOME}/_404/env.sh"
-[ -r "$bootstrap_env" ] && . "$bootstrap_env"
+[ -r "$INIT_LOADER" ] && . "$INIT_LOADER"
+[ -r "$XDG_CONFIG_HOME/_404/env.sh" ] && . "$XDG_CONFIG_HOME/_404/env.sh"

@@ -18,9 +18,15 @@ BASE_GENERATED_FILES = {
 }
 
 NONINTERACTIVE_SHELL_FILES = {
+    "src/templates/domain/files/init/loader.sh.tmpl": "files/init/loader.sh",
+    "src/templates/domain/files/init/check.sh.tmpl": "files/init/check.sh",
+    "src/templates/domain/files/init/env.sh.tmpl": "files/init/env.sh",
+    "src/templates/domain/files/init/path.sh.tmpl": "files/init/path.sh",
     "src/templates/domain/files/env-loader.sh.tmpl": "files/env-loader.sh",
+    "src/templates/domain/files/profile.tmpl": "files/profile",
     "src/templates/domain/files/bash_profile.tmpl": "files/bash_profile",
     "src/templates/domain/files/bashrc.tmpl": "files/bashrc",
+    "src/templates/domain/files/bash_env.tmpl": "files/bash_env",
 }
 
 INTERACTIVE_SHELL_FILES = {
@@ -141,9 +147,9 @@ def derive_paths(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, str
     return {
         "DOTS_REPO": roots.get("dots_repo", "src"),
         "DOTS_DIR": roots.get("dots_dir", "dots"),
-        "DOTS_HOME": roots.get("dots", "$HOME/$DOTS_REPO/$DOTS_DIR"),
+        "DOTS_HOME": roots.get("dots", "$XDG_DATA_HOME/_404/dots"),
         "XDG_CONFIG_HOME": roots["xdg_config"],
-        "XDG_DATA_HOME": roots["xdg_data"],
+        "XDG_DATA_HOME": roots.get("xdg_data", "$HOME/.local/share"),
         "XDG_OPT_HOME": roots["xdg_opt"],
         "XDG_STATE_HOME": roots["xdg_state"],
         "XDG_CACHE_HOME": roots["xdg_cache"],
