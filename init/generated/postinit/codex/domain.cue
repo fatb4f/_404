@@ -18,8 +18,8 @@ domain: schema.#Domain & {
 	provides: [
 		"domain.generated/postinit/codex",
 		"agent.codex",
-		"agent.shell-tool",
-		"agent.shell-snapshot",
+		"agent.codex.profile.slim",
+		"agent.codex.hooks",
 	]
 
 	roots: {
@@ -44,56 +44,65 @@ domain: schema.#Domain & {
 
 	owns: [
 	{
-		"id": "env.sh",
-		"source": "files/env.sh",
-		"target": "$DOMAIN_PREFIX/env.sh",
+		"id": "config.toml",
+		"source": "files/config.toml",
+		"target": "$XDG_CONFIG_HOME/codex/config.toml",
 		"mode": "0644",
 		"activation": "atomic-copy",
 		"role": "projected"
 	},
 	{
-		"id": "init.sh",
-		"source": "files/init.sh",
-		"target": "$DOMAIN_PREFIX/init.sh",
-		"mode": "0644",
-		"activation": "atomic-copy",
-		"role": "projected"
-	},
-	{
-		"id": "functions.sh",
-		"source": "files/functions.sh",
-		"target": "$DOMAIN_PREFIX/functions.sh",
-		"mode": "0644",
-		"activation": "atomic-copy",
-		"role": "projected"
-	},
-	{
-		"id": "shell_tool",
-		"source": "files/bin/shell_tool",
-		"target": "$DOMAIN_PREFIX/bin/shell_tool",
+		"id": "session-snapshot",
+		"source": "files/hooks/session-snapshot",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/session-snapshot",
 		"mode": "0755",
 		"activation": "atomic-copy",
 		"role": "projected"
 	},
 	{
-		"id": "shell_snapshot",
-		"source": "files/bin/shell_snapshot",
-		"target": "$DOMAIN_PREFIX/bin/shell_snapshot",
+		"id": "pre-tool-use",
+		"source": "files/hooks/pre-tool-use",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/pre-tool-use",
 		"mode": "0755",
 		"activation": "atomic-copy",
 		"role": "projected"
 	},
 	{
-		"id": "shell_tool",
-		"source": "$DOMAIN_PREFIX/bin/shell_tool",
-		"target": "$TOOL_PATH_HOME/shell_tool",
-		"activation": "symlink",
-		"role": "activated"
+		"id": "post-tool-use",
+		"source": "files/hooks/post-tool-use",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/post-tool-use",
+		"mode": "0755",
+		"activation": "atomic-copy",
+		"role": "projected"
 	},
 	{
-		"id": "shell_snapshot",
-		"source": "$DOMAIN_PREFIX/bin/shell_snapshot",
-		"target": "$TOOL_PATH_HOME/shell_snapshot",
+		"id": "README.md",
+		"source": "files/rules/README.md",
+		"target": "$XDG_CONFIG_HOME/codex/rules/README.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "SKILL.md",
+		"source": "files/skills/cue/SKILL.md",
+		"target": "$XDG_CONFIG_HOME/codex/skills/cue/SKILL.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "_404-codex",
+		"source": "files/bin/_404-codex",
+		"target": "$DOMAIN_PREFIX/bin/_404-codex",
+		"mode": "0755",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "_404-codex",
+		"source": "$DOMAIN_PREFIX/bin/_404-codex",
+		"target": "$TOOL_PATH_HOME/_404-codex",
 		"activation": "symlink",
 		"role": "activated"
 	}
@@ -115,13 +124,28 @@ domain: schema.#Domain & {
 		"severity": "degraded"
 	},
 	{
-		"id": "files-present",
-		"command": "test -x $DOMAIN_PREFIX/bin/shell_tool && test -x $DOMAIN_PREFIX/bin/shell_snapshot",
+		"id": "config-present",
+		"command": "test -f $XDG_CONFIG_HOME/codex/config.toml",
 		"severity": "fatal"
 	},
 	{
-		"id": "shell-parse",
-		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh",
+		"id": "hooks-present",
+		"command": "test -x $XDG_CONFIG_HOME/codex/hooks/session-snapshot && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use",
+		"severity": "fatal"
+	},
+	{
+		"id": "launcher-present",
+		"command": "test -x $DOMAIN_PREFIX/bin/_404-codex",
+		"severity": "fatal"
+	},
+	{
+		"id": "toml-parse",
+		"command": "python3 -c 'import os,pathlib,tomllib; tomllib.loads(pathlib.Path(os.environ[\"XDG_CONFIG_HOME\"] + \"/codex/config.toml\").read_text())'",
+		"severity": "fatal"
+	},
+	{
+		"id": "hook-shell-parse",
+		"command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-snapshot $XDG_CONFIG_HOME/codex/hooks/pre-tool-use $XDG_CONFIG_HOME/codex/hooks/post-tool-use $DOMAIN_PREFIX/bin/_404-codex",
 		"severity": "fatal"
 	}
 ]

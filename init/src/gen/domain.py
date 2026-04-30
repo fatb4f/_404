@@ -27,7 +27,24 @@ INTERACTIVE_SHELL_FILES = {
     "src/templates/domain/files/zshrc.tmpl": "files/zshrc",
 }
 
-EXECUTABLE_OUTPUTS = {"install.sh", "check.sh"}
+CODEX_PROFILE_FILES = {
+    "src/templates/codex/files/config.toml.tmpl": "files/config.toml",
+    "src/templates/codex/files/hooks/session-snapshot.tmpl": "files/hooks/session-snapshot",
+    "src/templates/codex/files/hooks/pre-tool-use.tmpl": "files/hooks/pre-tool-use",
+    "src/templates/codex/files/hooks/post-tool-use.tmpl": "files/hooks/post-tool-use",
+    "src/templates/codex/files/bin/_404-codex.tmpl": "files/bin/_404-codex",
+    "src/templates/codex/files/rules/README.md.tmpl": "files/rules/README.md",
+    "src/templates/codex/files/skills/cue/SKILL.md.tmpl": "files/skills/cue/SKILL.md",
+}
+
+EXECUTABLE_OUTPUTS = {
+    "install.sh",
+    "check.sh",
+    "files/hooks/session-snapshot",
+    "files/hooks/pre-tool-use",
+    "files/hooks/post-tool-use",
+    "files/bin/_404-codex",
+}
 DEFAULT_OUTPUT_DIR = "generated/domains"
 
 
@@ -163,9 +180,16 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         for c in domain.get("checks", [])
     ]
 
+    codex_profile = domain.get("codex_profile") or {}
+
     return {
         **paths,
         **pv,
+        "CODEX_PROFILE": codex_profile.get("profile", "slim"),
+        "CODEX_CONFIG_TARGET": codex_profile.get("config_target", "$XDG_CONFIG_HOME/codex/config.toml"),
+        "CODEX_HOOKS_TARGET": codex_profile.get("hooks_target", "$XDG_CONFIG_HOME/codex/hooks"),
+        "CODEX_RULES_TARGET": codex_profile.get("rules_target", "$XDG_CONFIG_HOME/codex/rules"),
+        "CODEX_SKILLS_TARGET": codex_profile.get("skills_target", "$XDG_CONFIG_HOME/codex/skills"),
         "DOMAIN_ID": domain["id"],
         "DOMAIN_NS": domain["namespace"],
         "DOMAIN_STAGE": domain["stage"],
@@ -210,13 +234,20 @@ def main() -> None:
     for domain in domains:
         values = render_values(roots, domain, domains)
         domain_dir = root / values["DOMAIN_OUTPUT_DIR"]
+        if domain.get("codex_profile") and domain_dir.exists():
+            shutil.rmtree(domain_dir)
         (domain_dir / "files").mkdir(parents=True, exist_ok=True)
 
         generated_files = dict(BASE_GENERATED_FILES)
+        if domain.get("codex_profile"):
+            generated_files.pop("src/templates/domain/files/env.sh.tmpl", None)
+            generated_files.pop("src/templates/domain/files/init.sh.tmpl", None)
         if domain.get("stage") == "00-shell":
             generated_files.update(NONINTERACTIVE_SHELL_FILES)
         if domain.get("stage") == "interactive-shell":
             generated_files.update(INTERACTIVE_SHELL_FILES)
+        if domain.get("codex_profile"):
+            generated_files.update(CODEX_PROFILE_FILES)
 
         for tmpl_rel, out_rel in generated_files.items():
             tmpl = root / tmpl_rel

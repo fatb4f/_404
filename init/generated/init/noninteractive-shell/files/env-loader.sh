@@ -28,9 +28,6 @@ fi
 if [ -r "$XDG_OPT_HOME/1-terminal/env.sh" ]; then
   . "$XDG_OPT_HOME/1-terminal/env.sh"
 fi
-if [ -r "$XDG_OPT_HOME/2-agent/env.sh" ]; then
-  . "$XDG_OPT_HOME/2-agent/env.sh"
-fi
 if [ -r "$XDG_OPT_HOME/go/env.sh" ]; then
   . "$XDG_OPT_HOME/go/env.sh"
 fi

@@ -36,15 +36,19 @@ export DOMAIN_PREFIX DOMAIN_STATE DOMAIN_CACHE DOMAIN_BIN_HOME DOMAIN_SHARE_HOME
 
 DOMAIN_REQUIRES_READY='10-terminal'
 
-DOMAIN_FILES='files/env.sh|$DOMAIN_PREFIX/env.sh|0644
-files/init.sh|$DOMAIN_PREFIX/init.sh|0644
-files/functions.sh|$DOMAIN_PREFIX/functions.sh|0644
-files/bin/shell_tool|$DOMAIN_PREFIX/bin/shell_tool|0755
-files/bin/shell_snapshot|$DOMAIN_PREFIX/bin/shell_snapshot|0755'
-DOMAIN_LINKS='$DOMAIN_PREFIX/bin/shell_tool|$TOOL_PATH_HOME/shell_tool
-$DOMAIN_PREFIX/bin/shell_snapshot|$TOOL_PATH_HOME/shell_snapshot'
+DOMAIN_FILES='files/config.toml|$XDG_CONFIG_HOME/codex/config.toml|0644
+files/hooks/session-snapshot|$XDG_CONFIG_HOME/codex/hooks/session-snapshot|0755
+files/hooks/pre-tool-use|$XDG_CONFIG_HOME/codex/hooks/pre-tool-use|0755
+files/hooks/post-tool-use|$XDG_CONFIG_HOME/codex/hooks/post-tool-use|0755
+files/rules/README.md|$XDG_CONFIG_HOME/codex/rules/README.md|0644
+files/skills/cue/SKILL.md|$XDG_CONFIG_HOME/codex/skills/cue/SKILL.md|0644
+files/bin/_404-codex|$DOMAIN_PREFIX/bin/_404-codex|0755'
+DOMAIN_LINKS='$DOMAIN_PREFIX/bin/_404-codex|$TOOL_PATH_HOME/_404-codex'
 DOMAIN_CHECKS='stage-ready|test -f $XDG_STATE_HOME/_404/bootstrap/20-agent.ready|degraded
 npm-available|command -v npm >/dev/null 2>&1|fatal
 codex-available|command -v codex >/dev/null 2>&1|degraded
-files-present|test -x $DOMAIN_PREFIX/bin/shell_tool && test -x $DOMAIN_PREFIX/bin/shell_snapshot|fatal
-shell-parse|sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh|fatal'
+config-present|test -f $XDG_CONFIG_HOME/codex/config.toml|fatal
+hooks-present|test -x $XDG_CONFIG_HOME/codex/hooks/session-snapshot && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use|fatal
+launcher-present|test -x $DOMAIN_PREFIX/bin/_404-codex|fatal
+toml-parse|python3 -c 'import os,pathlib,tomllib; tomllib.loads(pathlib.Path(os.environ["XDG_CONFIG_HOME"] + "/codex/config.toml").read_text())'|fatal
+hook-shell-parse|sh -n $XDG_CONFIG_HOME/codex/hooks/session-snapshot $XDG_CONFIG_HOME/codex/hooks/pre-tool-use $XDG_CONFIG_HOME/codex/hooks/post-tool-use $DOMAIN_PREFIX/bin/_404-codex|fatal'

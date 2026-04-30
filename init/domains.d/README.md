@@ -25,5 +25,7 @@ src/domains/seed.json
 The noninteractive shell fragment owns the login-shell loader and bash startup
 files. The interactive shell fragment owns the generated `.zshenv` and `.zshrc`
 startup files.
+The codex fragment owns the projected Codex profile surface under
+`$XDG_CONFIG_HOME/codex` plus the `_404-codex` launcher.
 
 YAML support uses PyYAML when available. JSON-compatible `.yml` fragments are also accepted without PyYAML.

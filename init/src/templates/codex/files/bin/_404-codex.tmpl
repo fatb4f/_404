@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+# generated _404 Codex launcher
+# shellcheck shell=sh
+set -eu
+
+: "${DOTS_REPO:=src}"
+: "${DOTS_DIR:=dots}"
+: "${DOTS_HOME:=$HOME/$DOTS_REPO/$DOTS_DIR}"
+: "${XDG_CONFIG_HOME:=$DOTS_HOME/.config}"
+: "${CODEX_HOME:=$XDG_CONFIG_HOME/codex}"
+
+profile=${DOTS_PROFILE:-@CODEX_PROFILE@}
+
+case "${1-}" in
+  "")
+    ;;
+  --profile|-p|--profile=*)
+    exec codex "$@"
+    ;;
+  -*)
+    ;;
+  *)
+    profile=$1
+    shift
+    ;;
+esac
+
+DOTS_PROFILE=$profile
+DOTS_AGENT_SURFACE="codex"
+
+export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME CODEX_HOME DOTS_PROFILE DOTS_AGENT_SURFACE
+exec codex --profile "$profile" "$@"
