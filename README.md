@@ -40,6 +40,7 @@ generated/init/interactive-shell/
 generated/init/term/kitty/
 generated/postinit/codex/
 generated/tools/go/
+generated/tools/cue/
 ```
 
 Each generated domain contains:
@@ -56,6 +57,8 @@ install.sh
 
 The noninteractive shell domain owns the shared loader and bash startup wrappers.
 The interactive shell domain owns the zsh startup wrappers.
+The `tools/go` domain is the go-lang seed surface.
+The `tools/cue` domain is the CUE seed surface.
 
 ```txt
 files/env-loader.sh

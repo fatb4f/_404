@@ -1,7 +1,7 @@
 set shell := ["sh", "-eu", "-c"]
 
 python := "python3"
-domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex generated/tools/go"
+domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex generated/tools/go generated/tools/cue"
 
 # Compose optional domains.d fragments into a materialized seed.
 compose-seed:

@@ -5,8 +5,8 @@
   "ring": "workflow",
   "provider": "host_pkg",
   "output_dir": "generated/tools/go",
-  "bins": ["go"],
-  "provides": ["domain.generated/tools/go", "tool.go"],
+  "bins": ["go", "gofmt"],
+  "provides": ["domain.generated/tools/go", "tool.go", "tool.gofmt"],
   "deps": {
     "native": {
       "mode": "pkg_metadata",

@@ -3,18 +3,17 @@ package domain
 import "stage.local/src/schema"
 
 domain: schema.#Domain & {
-	id:        "go"
-	namespace: "GO"
-	stage:     "40-tools"
+	id:        "cue"
+	namespace: "CUE"
+	stage:     "41-cue"
 	ring:      "workflow"
-	provider:  "host_pkg"
-	outputDir: "generated/tools/go"
+	provider:  "domain_local"
+	outputDir: "generated/tools/cue"
 
 	requires: []
 	provides: [
-		"domain.generated/tools/go",
-		"tool.go",
-		"tool.gofmt",
+		"domain.generated/tools/cue",
+		"tool.cue",
 	]
 
 	roots: {
@@ -30,11 +29,11 @@ domain: schema.#Domain & {
 	}
 
 	paths: {
-		prefix:    "$XDG_OPT_HOME/go"
-		state:     "$XDG_STATE_HOME/_404/go"
-		cache:     "$XDG_CACHE_HOME/_404/go"
-		binHome:   "$XDG_OPT_HOME/go/bin"
-		shareHome: "$XDG_OPT_HOME/go/share"
+		prefix:    "$XDG_OPT_HOME/cue"
+		state:     "$XDG_STATE_HOME/_404/cue"
+		cache:     "$XDG_CACHE_HOME/_404/cue"
+		binHome:   "$XDG_OPT_HOME/cue/bin"
+		shareHome: "$XDG_OPT_HOME/cue/share"
 	}
 
 	owns: [
@@ -57,18 +56,18 @@ domain: schema.#Domain & {
 ]
 	checks: [
 	{
-		"id": "go-available",
-		"command": "command -v go >/dev/null 2>&1",
+		"id": "cue-available",
+		"command": "command -v cue >/dev/null 2>&1",
 		"severity": "fatal"
 	},
 	{
-		"id": "gofmt-available",
-		"command": "command -v gofmt >/dev/null 2>&1",
+		"id": "cue-version",
+		"command": "cue version >/dev/null 2>&1",
 		"severity": "fatal"
 	},
 	{
-		"id": "go-env-probe",
-		"command": "go env GOPATH GOBIN GOMODCACHE >/dev/null 2>&1",
+		"id": "cue-vet-help",
+		"command": "cue vet --help >/dev/null 2>&1",
 		"severity": "fatal"
 	}
 ]

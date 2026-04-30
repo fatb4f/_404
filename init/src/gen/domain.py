@@ -262,6 +262,16 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         for c in domain.get("checks", [])
     ]
 
+    extra_env_exports_text = extra_env_exports(domain)
+    template_values = domain.get("template_values") or {}
+    domain_env_extra = template_values.get("DOMAIN_ENV_EXTRA", "")
+    if domain_env_extra:
+        domain_env_extra = str(domain_env_extra).rstrip("\n")
+        if extra_env_exports_text:
+            extra_env_exports_text = f"{extra_env_exports_text}\n{domain_env_extra}"
+        else:
+            extra_env_exports_text = domain_env_extra
+
     return {
         **paths,
         **pv,
@@ -276,13 +286,14 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         "DOMAIN_COPIES": spec_lines(copy_rows),
         "DOMAIN_LINKS": spec_lines(link_rows),
         "DOMAIN_CHECKS": spec_lines(check_rows),
+        "DOMAIN_INIT_EXTRA": "",
         "REQUIRES_CUE": cue_list(domain.get("requires", [])),
         "PROVIDES_CUE": cue_list(domain.get("provides", [])),
         "OWNS_CUE": cue_records(owns),
         "CHECKS_CUE": cue_records(checks),
         "INIT_SOURCE_LINES": init_source_lines(domain),
         "SHELL_ENV_SOURCE_LINES": shell_env_source_lines(domains),
-        "EXTRA_ENV_EXPORTS": extra_env_exports(domain),
+        "EXTRA_ENV_EXPORTS": extra_env_exports_text,
         **(domain.get("template_values") or {}),
     }
 

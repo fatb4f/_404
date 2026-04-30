@@ -1,0 +1,15 @@
+{
+  "id": "cue",
+  "namespace": "CUE",
+  "stage": "41-cue",
+  "ring": "workflow",
+  "provider": "domain_local",
+  "output_dir": "generated/tools/cue",
+  "bins": ["cue"],
+  "provides": ["domain.generated/tools/cue", "tool.cue"],
+  "files": [
+    {"source": "files/env.sh", "target": "$DOMAIN_PREFIX/env.sh", "mode": "0644"},
+    {"source": "files/init.sh", "target": "$DOMAIN_PREFIX/init.sh", "mode": "0644"}
+  ],
+  "checks": []
+}

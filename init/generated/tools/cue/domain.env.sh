@@ -1,17 +1,17 @@
-# generated domain runtime metadata: go
+# generated domain runtime metadata: cue
 # shellcheck shell=sh
 
-DOMAIN_ID='go'
-DOMAIN_NS='GO'
-DOMAIN_STAGE='40-tools'
+DOMAIN_ID='cue'
+DOMAIN_NS='CUE'
+DOMAIN_STAGE='41-cue'
 DOMAIN_RING='workflow'
-DOMAIN_PROVIDER='host_pkg'
-DOMAIN_PRIMARY_BIN='go'
-DOMAIN_HOST_PACKAGE='go'
+DOMAIN_PROVIDER='domain_local'
+DOMAIN_PRIMARY_BIN='cue'
+DOMAIN_HOST_PACKAGE=''
 DOMAIN_NPM_PACKAGE=''
 DOMAIN_CARGO_CRATE=''
 DOMAIN_GO_MODULE=''
-DOMAIN_OUTPUT_DIR='generated/tools/go'
+DOMAIN_OUTPUT_DIR='generated/tools/cue'
 
 : "${DOTS_REPO:=src}"
 : "${DOTS_DIR:=dots}"
@@ -25,11 +25,11 @@ DOMAIN_OUTPUT_DIR='generated/tools/go'
 : "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
 [ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
 
-: "${DOMAIN_PREFIX:=$XDG_OPT_HOME/go}"
-: "${DOMAIN_STATE:=$XDG_STATE_HOME/_404/go}"
-: "${DOMAIN_CACHE:=$XDG_CACHE_HOME/_404/go}"
-: "${DOMAIN_BIN_HOME:=$XDG_OPT_HOME/go/bin}"
-: "${DOMAIN_SHARE_HOME:=$XDG_OPT_HOME/go/share}"
+: "${DOMAIN_PREFIX:=$XDG_OPT_HOME/cue}"
+: "${DOMAIN_STATE:=$XDG_STATE_HOME/_404/cue}"
+: "${DOMAIN_CACHE:=$XDG_CACHE_HOME/_404/cue}"
+: "${DOMAIN_BIN_HOME:=$XDG_OPT_HOME/cue/bin}"
+: "${DOMAIN_SHARE_HOME:=$XDG_OPT_HOME/cue/share}"
 
 export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME TOOL_PREFIX_HOME
 export DOMAIN_PREFIX DOMAIN_STATE DOMAIN_CACHE DOMAIN_BIN_HOME DOMAIN_SHARE_HOME
@@ -40,6 +40,6 @@ DOMAIN_FILES='files/env.sh|$DOMAIN_PREFIX/env.sh|0644
 files/init.sh|$DOMAIN_PREFIX/init.sh|0644'
 DOMAIN_COPIES=''
 DOMAIN_LINKS=''
-DOMAIN_CHECKS='go-available|command -v go >/dev/null 2>&1|fatal
-gofmt-available|command -v gofmt >/dev/null 2>&1|fatal
-go-env-probe|go env GOPATH GOBIN GOMODCACHE >/dev/null 2>&1|fatal'
+DOMAIN_CHECKS='cue-available|command -v cue >/dev/null 2>&1|fatal
+cue-version|cue version >/dev/null 2>&1|fatal
+cue-vet-help|cue vet --help >/dev/null 2>&1|fatal'
