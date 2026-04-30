@@ -35,6 +35,16 @@ domain_install_files() {
   done
 }
 
+domain_install_copies() {
+  read_specs "${DOMAIN_COPIES:-}" | while IFS='|' read -r src_t dst_t mode; do
+    src="$DOMAIN_DIR/$src_t"
+    dst=$(expand_path_template "$dst_t")
+    printf 'activate %-22s %s -> %s\n' "$DOMAIN_STAGE" "${src#$ROOT/}" "$dst"
+    [ "${DOMAIN_DRY_RUN:-0}" -eq 1 ] && continue
+    atomic_copy_file "$src" "$dst" "$mode"
+  done
+}
+
 domain_install_links() {
   read_specs "${DOMAIN_LINKS:-}" | while IFS='|' read -r src_t dst_t; do
     src=$(expand_path_template "$src_t")
@@ -64,6 +74,7 @@ domain_install_from_generated() {
 
   domain_install_files
   provider_install_payload
+  domain_install_copies
   domain_install_links
   stage_mark_ready "$DOMAIN_STAGE"
 }

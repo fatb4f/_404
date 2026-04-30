@@ -46,6 +46,7 @@ files/bin/kitty-launch-with-cwd|$DOMAIN_PREFIX/bin/kitty-launch-with-cwd|0755
 files/bin/kitty-launch-desktop|$DOMAIN_PREFIX/bin/kitty-launch-desktop|0755
 files/applications/stage-kitty.desktop|$DOMAIN_PREFIX/applications/stage-kitty.desktop|0644
 files/applications/stage-kitty-workflow.desktop|$DOMAIN_PREFIX/applications/stage-kitty-workflow.desktop|0644'
+DOMAIN_COPIES=''
 DOMAIN_LINKS='$DOMAIN_PREFIX/kitty/kitty.conf|$XDG_CONFIG_HOME/kitty/kitty.conf
 $DOMAIN_PREFIX/kitty/overrides.kitty.conf|$XDG_CONFIG_HOME/kitty/overrides.kitty.conf
 $DOMAIN_PREFIX/bin/kitty-t0|$TOOL_PATH_HOME/kitty-t0

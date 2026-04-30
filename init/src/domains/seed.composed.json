@@ -352,6 +352,7 @@
           "version": "latest"
         }
       },
+      "template_override": "codex",
       "codex_profile": {
         "profile": "slim",
         "config_target": "$XDG_CONFIG_HOME/codex/config.toml",
@@ -366,29 +367,69 @@
           "mode": "0644"
         },
         {
-          "source": "files/hooks/session-snapshot",
-          "target": "$XDG_CONFIG_HOME/codex/hooks/session-snapshot",
+          "source": "files/AGENTS.md",
+          "target": "$XDG_CONFIG_HOME/codex/AGENTS.md",
+          "mode": "0644"
+        },
+        {
+          "source": "files/hooks/session-init.sh",
+          "target": "$XDG_CONFIG_HOME/codex/hooks/session-init.sh",
           "mode": "0755"
         },
         {
-          "source": "files/hooks/pre-tool-use",
-          "target": "$XDG_CONFIG_HOME/codex/hooks/pre-tool-use",
+          "source": "files/hooks/pre-tool-use.sh",
+          "target": "$XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh",
           "mode": "0755"
         },
         {
-          "source": "files/hooks/post-tool-use",
-          "target": "$XDG_CONFIG_HOME/codex/hooks/post-tool-use",
+          "source": "files/hooks/post-tool-use.sh",
+          "target": "$XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh",
           "mode": "0755"
         },
         {
-          "source": "files/rules/README.md",
-          "target": "$XDG_CONFIG_HOME/codex/rules/README.md",
+          "source": "files/hooks/stop.sh",
+          "target": "$XDG_CONFIG_HOME/codex/hooks/stop.sh",
+          "mode": "0755"
+        },
+        {
+          "source": "files/roles/projection-maintainer.md",
+          "target": "$XDG_CONFIG_HOME/codex/roles/projection-maintainer.md",
+          "mode": "0644"
+        },
+        {
+          "source": "files/roles/reviewer.md",
+          "target": "$XDG_CONFIG_HOME/codex/roles/reviewer.md",
+          "mode": "0644"
+        },
+        {
+          "source": "files/roles/implementer.md",
+          "target": "$XDG_CONFIG_HOME/codex/roles/implementer.md",
+          "mode": "0644"
+        },
+        {
+          "source": "files/roles/release-checker.md",
+          "target": "$XDG_CONFIG_HOME/codex/roles/release-checker.md",
           "mode": "0644"
         },
         {
           "source": "files/skills/cue/SKILL.md",
           "target": "$XDG_CONFIG_HOME/codex/skills/cue/SKILL.md",
           "mode": "0644"
+        },
+        {
+          "source": "files/skills/sem/SKILL.md",
+          "target": "$XDG_CONFIG_HOME/codex/skills/sem/SKILL.md",
+          "mode": "0644"
+        },
+        {
+          "source": "files/skills/repo-search/SKILL.md",
+          "target": "$XDG_CONFIG_HOME/codex/skills/repo-search/SKILL.md",
+          "mode": "0644"
+        },
+        {
+          "source": "files/bin/repo-rg",
+          "target": "$DOMAIN_PREFIX/bin/repo-rg",
+          "mode": "0755"
         },
         {
           "source": "files/bin/_404-codex",
@@ -424,13 +465,33 @@
           "severity": "fatal"
         },
         {
+          "id": "agents-present",
+          "command": "test -f $XDG_CONFIG_HOME/codex/AGENTS.md",
+          "severity": "fatal"
+        },
+        {
           "id": "hooks-present",
-          "command": "test -x $XDG_CONFIG_HOME/codex/hooks/session-snapshot && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use",
+          "command": "test -x $XDG_CONFIG_HOME/codex/hooks/session-init.sh && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh && test -x $XDG_CONFIG_HOME/codex/hooks/stop.sh",
+          "severity": "fatal"
+        },
+        {
+          "id": "roles-present",
+          "command": "test -f $XDG_CONFIG_HOME/codex/roles/projection-maintainer.md && test -f $XDG_CONFIG_HOME/codex/roles/reviewer.md && test -f $XDG_CONFIG_HOME/codex/roles/implementer.md && test -f $XDG_CONFIG_HOME/codex/roles/release-checker.md",
+          "severity": "fatal"
+        },
+        {
+          "id": "skill-present",
+          "command": "test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md && test -f $XDG_CONFIG_HOME/codex/skills/sem/SKILL.md && test -f $XDG_CONFIG_HOME/codex/skills/repo-search/SKILL.md",
           "severity": "fatal"
         },
         {
           "id": "launcher-present",
           "command": "test -x $DOMAIN_PREFIX/bin/_404-codex",
+          "severity": "fatal"
+        },
+        {
+          "id": "repo-rg-present",
+          "command": "test -x $DOMAIN_PREFIX/bin/repo-rg",
           "severity": "fatal"
         },
         {
@@ -440,7 +501,7 @@
         },
         {
           "id": "hook-shell-parse",
-          "command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-snapshot $XDG_CONFIG_HOME/codex/hooks/pre-tool-use $XDG_CONFIG_HOME/codex/hooks/post-tool-use $DOMAIN_PREFIX/bin/_404-codex",
+          "command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/repo-rg $DOMAIN_PREFIX/bin/_404-codex",
           "severity": "fatal"
         }
       ],

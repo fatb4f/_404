@@ -43,6 +43,7 @@ files/bash_profile|$HOME/.bash_profile|0644
 files/bashrc|$HOME/.bashrc|0644
 files/path.sh|$DOMAIN_PREFIX/path.sh|0644
 files/require.sh|$DOMAIN_PREFIX/require.sh|0644'
+DOMAIN_COPIES=''
 DOMAIN_LINKS=''
 DOMAIN_CHECKS='stage-ready|test -f $XDG_STATE_HOME/_404/bootstrap/00-shell.ready|fatal
 files-present|test -f $DOMAIN_PREFIX/init.sh && test -f $DOMAIN_PREFIX/env.sh && test -f $DOMAIN_PREFIX/path.sh && test -f $DOMAIN_PREFIX/require.sh && test -f $XDG_CONFIG_HOME/_404/env.sh && test -f $HOME/.bash_profile && test -f $HOME/.bashrc|fatal

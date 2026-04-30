@@ -40,6 +40,7 @@ DOMAIN_FILES='files/env.sh|$DOMAIN_PREFIX/env.sh|0644
 files/init.sh|$DOMAIN_PREFIX/init.sh|0644
 files/zshenv|$HOME/.zshenv|0644
 files/zshrc|$HOME/.zshrc|0644'
+DOMAIN_COPIES=''
 DOMAIN_LINKS=''
 DOMAIN_CHECKS='zsh-available|command -v zsh >/dev/null 2>&1|fatal
 zshenv-parse|test -f $HOME/.zshenv && sh -n $HOME/.zshenv|fatal

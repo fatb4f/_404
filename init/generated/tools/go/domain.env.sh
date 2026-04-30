@@ -38,5 +38,6 @@ DOMAIN_REQUIRES_READY=''
 
 DOMAIN_FILES='files/env.sh|$DOMAIN_PREFIX/env.sh|0644
 files/init.sh|$DOMAIN_PREFIX/init.sh|0644'
+DOMAIN_COPIES=''
 DOMAIN_LINKS=''
 DOMAIN_CHECKS='go-available|command -v go >/dev/null 2>&1|fatal'
