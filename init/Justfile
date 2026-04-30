@@ -3,7 +3,7 @@ set shell := ["sh", "-eu", "-c"]
 python := "python3"
 repo_root := ".."
 dots_root := "../dots"
-domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex generated/tools/go generated/tools/cue"
+domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex generated/tools/go generated/tools/cue generated/tools/rust generated/tools/ripgrep"
 
 # Compose optional domains.d fragments into a materialized seed.
 compose-seed:

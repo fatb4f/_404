@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# generated: rust env
+# shellcheck shell=sh
+
+: "${DOTS_REPO:=src}"
+: "${DOTS_DIR:=dots}"
+: "${DOTS_HOME:=$XDG_DATA_HOME/_404/dots}"
+: "${XDG_CONFIG_HOME:=$DOTS_HOME/.config}"
+: "${XDG_DATA_HOME:=$HOME/.local/share}"
+: "${XDG_OPT_HOME:=$DOTS_HOME/.local/opt}"
+: "${XDG_STATE_HOME:=$HOME/.local/state}"
+: "${XDG_CACHE_HOME:=$HOME/.cache}"
+: "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+: "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
+[ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
+
+export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME TOOL_PREFIX_HOME
+
+: "${RUST_PREFIX:=$XDG_OPT_HOME/rust}"
+: "${RUST_STATE:=$XDG_STATE_HOME/_404/rust}"
+: "${RUST_CACHE:=$XDG_CACHE_HOME/_404/rust}"
+: "${RUST_BIN_HOME:=$XDG_OPT_HOME/rust/bin}"
+: "${RUST_SHARE_HOME:=$XDG_OPT_HOME/rust/share}"
+
+export RUST_PREFIX RUST_STATE RUST_CACHE RUST_BIN_HOME RUST_SHARE_HOME
+
+: "${CARGO_HOME:=$XDG_DATA_HOME/cargo}"
+if command -v _path_prepend >/dev/null 2>&1; then
+  _path_prepend "$CARGO_HOME/bin"
+else
+  case ":$PATH:" in
+    *":$CARGO_HOME/bin:"*) ;;
+    *) PATH="$CARGO_HOME/bin${PATH:+:$PATH}"; export PATH ;;
+  esac
+fi
+export CARGO_HOME PATH

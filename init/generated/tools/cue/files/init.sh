@@ -13,6 +13,10 @@
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
 : "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
 [ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
+case $TOOL_PATH_HOME in
+  */bin) ;;
+  *) TOOL_PATH_HOME=$HOME/.local/bin; TOOL_PREFIX_HOME=${TOOL_PATH_HOME%/bin} ;;
+esac
 : "${CUE_PREFIX:=$XDG_OPT_HOME/cue}"
 
 # Source the domain env before the ready-marker check. This is intentionally

@@ -1,0 +1,20 @@
+{
+  "id": "ripgrep",
+  "namespace": "RIPGREP",
+  "stage": "43-ripgrep",
+  "ring": "workflow",
+  "provider": "cargo_binstall",
+  "output_dir": "generated/tools/ripgrep",
+  "bins": ["rg"],
+  "provides": ["domain.generated/tools/ripgrep", "tool.rg"],
+  "source": {
+    "cargo": {
+      "crate": "ripgrep"
+    }
+  },
+  "files": [
+    {"source": "files/env.sh", "target": "$DOMAIN_PREFIX/env.sh", "mode": "0644"},
+    {"source": "files/init.sh", "target": "$DOMAIN_PREFIX/init.sh", "mode": "0644"}
+  ],
+  "checks": []
+}

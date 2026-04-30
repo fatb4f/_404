@@ -30,6 +30,9 @@
         "BOOTSTRAP_STATE": "$XDG_STATE_HOME/_404/bootstrap",
         "STAGE_ROOT": "$NONINTERACTIVE_SHELL_PREFIX"
       },
+      "template_values": {
+        "DOMAIN_EXPORT_PATH_VARS": "0"
+      },
       "init_sources": [
         "require.sh",
         "env.sh",
@@ -218,6 +221,9 @@
           "severity": "degraded"
         }
       ],
+      "template_values": {
+        "DOMAIN_EXPORT_PATH_VARS": "0"
+      },
       "output_dir": "generated/init/interactive-shell"
     },
     {
@@ -226,6 +232,7 @@
       "stage": "10-terminal",
       "ring": "terminal",
       "provider": "host_pkg",
+      "template_override": "term",
       "bins": [
         "kitty"
       ],
@@ -290,6 +297,11 @@
           "mode": "0755"
         },
         {
+          "source": "files/bin/kitty-zsh-max",
+          "target": "$DOMAIN_PREFIX/bin/kitty-zsh-max",
+          "mode": "0755"
+        },
+        {
           "source": "files/applications/stage-kitty.desktop",
           "target": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
           "mode": "0644"
@@ -322,6 +334,10 @@
           "target": "$TOOL_PATH_HOME/kitty-launch-desktop"
         },
         {
+          "source": "$DOMAIN_PREFIX/bin/kitty-zsh-max",
+          "target": "$TOOL_PATH_HOME/kitty-zsh-max"
+        },
+        {
           "source": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
           "target": "$XDG_DATA_HOME/applications/stage-kitty.desktop"
         },
@@ -343,7 +359,7 @@
         },
         {
           "id": "shell-parse",
-          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop",
+          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop $DOMAIN_PREFIX/bin/kitty-zsh-max",
           "severity": "fatal"
         },
         {

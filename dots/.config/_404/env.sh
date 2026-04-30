@@ -34,6 +34,9 @@ fi
 if [ -r "$XDG_OPT_HOME/go/env.sh" ]; then
   . "$XDG_OPT_HOME/go/env.sh"
 fi
+if [ -r "$XDG_OPT_HOME/rust/env.sh" ]; then
+  . "$XDG_OPT_HOME/rust/env.sh"
+fi
 if [ -r "$XDG_OPT_HOME/0-noninteractive-shell/path.sh" ]; then
   . "$XDG_OPT_HOME/0-noninteractive-shell/path.sh"
 fi

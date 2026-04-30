@@ -1,0 +1,38 @@
+{
+  "id": "rust",
+  "namespace": "RUST",
+  "stage": "42-rust",
+  "ring": "workflow",
+  "provider": "host_pkg",
+  "output_dir": "generated/tools/rust",
+  "bins": ["rustc", "cargo", "rustfmt", "clippy-driver"],
+  "provides": [
+    "domain.generated/tools/rust",
+    "tool.rustc",
+    "tool.cargo",
+    "tool.rustfmt",
+    "tool.clippy-driver"
+  ],
+  "deps": {
+    "native": {
+      "mode": "pkg_metadata",
+      "packages": {
+        "arch": ["rust"],
+        "debian": ["rustc", "cargo", "rustfmt", "rust-clippy"]
+      },
+      "include": [
+        "depends",
+        "predepends"
+      ],
+      "features": [
+        "recommends",
+        "optional"
+      ]
+    }
+  },
+  "files": [
+    {"source": "files/env.sh", "target": "$DOMAIN_PREFIX/env.sh", "mode": "0644"},
+    {"source": "files/init.sh", "target": "$DOMAIN_PREFIX/init.sh", "mode": "0644"}
+  ],
+  "checks": []
+}

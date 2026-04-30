@@ -171,14 +171,30 @@ def provider_values(domain: dict[str, Any]) -> dict[str, str]:
     deps = domain.get("deps") or {}
     native = deps.get("native") or {}
     packages = native.get("packages") or {}
-    host_package = packages.get("arch") or packages.get("debian") or ""
+    def package_text(value: Any) -> str:
+        if isinstance(value, list):
+            return " ".join(str(item) for item in value if str(item))
+        if value:
+            return str(value)
+        return ""
+
+    host_packages_arch = package_text(packages.get("arch"))
+    host_packages_debian = package_text(packages.get("debian"))
+    host_packages = host_packages_debian or host_packages_arch
+    host_package = host_packages.split()[0] if host_packages else ""
     go_module = go.get("module", "")
     go_version = go.get("version", "")
     if go_module and go_version and "@" not in go_module:
         go_module = f"{go_module}@{go_version}"
     return {
         "DOMAIN_BIN": bins[0] if bins else "",
+        "DOMAIN_BINS": " ".join(bins),
         "HOST_PACKAGE": host_package,
+        "HOST_PACKAGES": host_packages,
+        "HOST_PACKAGE_ARCH": host_packages_arch.split()[0] if host_packages_arch else "",
+        "HOST_PACKAGES_ARCH": host_packages_arch,
+        "HOST_PACKAGE_DEBIAN": host_packages_debian.split()[0] if host_packages_debian else "",
+        "HOST_PACKAGES_DEBIAN": host_packages_debian,
         "NPM_PACKAGE": npm.get("package", ""),
         "CARGO_CRATE": cargo.get("crate", ""),
         "GO_MODULE": go_module,
@@ -293,6 +309,7 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         "DOMAIN_LINKS": spec_lines(link_rows),
         "DOMAIN_CHECKS": spec_lines(check_rows),
         "DOMAIN_INIT_EXTRA": "",
+        "DOMAIN_EXPORT_PATH_VARS": str((domain.get("template_values") or {}).get("DOMAIN_EXPORT_PATH_VARS", "1")),
         "REQUIRES_CUE": cue_list(domain.get("requires", [])),
         "PROVIDES_CUE": cue_list(domain.get("provides", [])),
         "OWNS_CUE": cue_records(owns),

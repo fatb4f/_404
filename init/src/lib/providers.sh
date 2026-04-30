@@ -10,13 +10,34 @@ provider_install_payload() {
       ;;
 
     host_pkg)
-      if [ -n "${DOMAIN_PRIMARY_BIN:-}" ] && ! command -v "$DOMAIN_PRIMARY_BIN" >/dev/null 2>&1; then
-        if [ -n "${DOMAIN_HOST_PACKAGE:-}" ]; then
-          install_pkg "$DOMAIN_HOST_PACKAGE"
-        else
-          printf >&2 'missing host command and no DOMAIN_HOST_PACKAGE declared: %s\n' "$DOMAIN_PRIMARY_BIN"
-          return 127
+      if command -v apt-get >/dev/null 2>&1; then
+        host_packages=${DOMAIN_HOST_PACKAGES_DEBIAN:-${DOMAIN_HOST_PACKAGE_DEBIAN:-${DOMAIN_HOST_PACKAGES:-${DOMAIN_HOST_PACKAGE:-}}}}
+      elif command -v pacman >/dev/null 2>&1; then
+        host_packages=${DOMAIN_HOST_PACKAGES_ARCH:-${DOMAIN_HOST_PACKAGE_ARCH:-${DOMAIN_HOST_PACKAGES:-${DOMAIN_HOST_PACKAGE:-}}}}
+      else
+        host_packages=${DOMAIN_HOST_PACKAGES:-${DOMAIN_HOST_PACKAGE:-}}
+      fi
+      if [ -n "${DOMAIN_BINS:-}" ]; then
+        all_present=1
+        for bin in $DOMAIN_BINS; do
+          if ! command -v "$bin" >/dev/null 2>&1; then
+            all_present=0
+            break
+          fi
+        done
+        if [ "$all_present" -eq 1 ]; then
+          return 0
         fi
+      elif [ -n "${DOMAIN_PRIMARY_BIN:-}" ] && command -v "$DOMAIN_PRIMARY_BIN" >/dev/null 2>&1; then
+        return 0
+      fi
+
+      if [ -n "$host_packages" ]; then
+        # shellcheck disable=SC2086
+        install_pkg $host_packages
+      else
+        printf >&2 'missing host command and no DOMAIN_HOST_PACKAGE declared: %s\n' "$DOMAIN_PRIMARY_BIN"
+        return 127
       fi
       ;;
 

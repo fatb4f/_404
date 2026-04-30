@@ -106,6 +106,14 @@ domain: schema.#Domain & {
 		"role": "projected"
 	},
 	{
+		"id": "kitty-zsh-max",
+		"source": "files/bin/kitty-zsh-max",
+		"target": "$DOMAIN_PREFIX/bin/kitty-zsh-max",
+		"mode": "0755",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
 		"id": "stage-kitty.desktop",
 		"source": "files/applications/stage-kitty.desktop",
 		"target": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
@@ -157,6 +165,13 @@ domain: schema.#Domain & {
 		"role": "activated"
 	},
 	{
+		"id": "kitty-zsh-max",
+		"source": "$DOMAIN_PREFIX/bin/kitty-zsh-max",
+		"target": "$TOOL_PATH_HOME/kitty-zsh-max",
+		"activation": "symlink",
+		"role": "activated"
+	},
+	{
 		"id": "stage-kitty.desktop",
 		"source": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
 		"target": "$XDG_DATA_HOME/applications/stage-kitty.desktop",
@@ -184,7 +199,7 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "shell-parse",
-		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop",
+		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop $DOMAIN_PREFIX/bin/kitty-zsh-max",
 		"severity": "fatal"
 	},
 	{

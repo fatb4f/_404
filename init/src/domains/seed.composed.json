@@ -30,6 +30,9 @@
         "BOOTSTRAP_STATE": "$XDG_STATE_HOME/_404/bootstrap",
         "STAGE_ROOT": "$NONINTERACTIVE_SHELL_PREFIX"
       },
+      "template_values": {
+        "DOMAIN_EXPORT_PATH_VARS": "0"
+      },
       "init_sources": [
         "require.sh",
         "env.sh",
@@ -218,6 +221,9 @@
           "severity": "degraded"
         }
       ],
+      "template_values": {
+        "DOMAIN_EXPORT_PATH_VARS": "0"
+      },
       "output_dir": "generated/init/interactive-shell"
     },
     {
@@ -226,6 +232,7 @@
       "stage": "10-terminal",
       "ring": "terminal",
       "provider": "host_pkg",
+      "template_override": "term",
       "bins": [
         "kitty"
       ],
@@ -290,6 +297,11 @@
           "mode": "0755"
         },
         {
+          "source": "files/bin/kitty-zsh-max",
+          "target": "$DOMAIN_PREFIX/bin/kitty-zsh-max",
+          "mode": "0755"
+        },
+        {
           "source": "files/applications/stage-kitty.desktop",
           "target": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
           "mode": "0644"
@@ -322,6 +334,10 @@
           "target": "$TOOL_PATH_HOME/kitty-launch-desktop"
         },
         {
+          "source": "$DOMAIN_PREFIX/bin/kitty-zsh-max",
+          "target": "$TOOL_PATH_HOME/kitty-zsh-max"
+        },
+        {
           "source": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
           "target": "$XDG_DATA_HOME/applications/stage-kitty.desktop"
         },
@@ -343,7 +359,7 @@
         },
         {
           "id": "shell-parse",
-          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop",
+          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop $DOMAIN_PREFIX/bin/kitty-zsh-max",
           "severity": "fatal"
         },
         {
@@ -660,6 +676,162 @@
       ],
       "template_values": {
         "DOMAIN_ENV_EXTRA": ": \"${GOPATH:=$HOME/go}\"\n: \"${GOBIN:=$GOPATH/bin}\"\nif command -v _path_prepend >/dev/null 2>&1; then\n  _path_prepend \"$GOBIN\"\nelse\n  case \":$PATH:\" in\n    *\":$GOBIN:\"*) ;;\n    *) PATH=\"$GOBIN${PATH:+:$PATH}\"; export PATH ;;\n  esac\nfi\nexport GOPATH GOBIN PATH"
+      }
+    },
+    {
+      "id": "ripgrep",
+      "namespace": "RIPGREP",
+      "stage": "43-ripgrep",
+      "ring": "workflow",
+      "provider": "cargo_binstall",
+      "output_dir": "generated/tools/ripgrep",
+      "bins": [
+        "rg"
+      ],
+      "provides": [
+        "domain.generated/tools/ripgrep",
+        "tool.rg"
+      ],
+      "source": {
+        "cargo": {
+          "crate": "ripgrep"
+        }
+      },
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        }
+      ],
+      "checks": [
+        {
+          "id": "rg-available",
+          "command": "command -v rg >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "cargo-available",
+          "command": "command -v cargo >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "cargo-binstall-available",
+          "command": "command -v cargo-binstall >/dev/null 2>&1",
+          "severity": "degraded"
+        },
+        {
+          "id": "rg-version",
+          "command": "rg --version >/dev/null 2>&1",
+          "severity": "fatal"
+        }
+      ]
+    },
+    {
+      "id": "rust",
+      "namespace": "RUST",
+      "stage": "42-rust",
+      "ring": "workflow",
+      "provider": "host_pkg",
+      "output_dir": "generated/tools/rust",
+      "bins": [
+        "rustc",
+        "cargo",
+        "rustfmt",
+        "clippy-driver"
+      ],
+      "provides": [
+        "domain.generated/tools/rust",
+        "tool.rustc",
+        "tool.cargo",
+        "tool.rustfmt",
+        "tool.clippy-driver"
+      ],
+      "deps": {
+        "native": {
+          "mode": "pkg_metadata",
+          "packages": {
+            "arch": [
+              "rust"
+            ],
+            "debian": [
+              "rustc",
+              "cargo",
+              "rustfmt",
+              "rust-clippy"
+            ]
+          },
+          "include": [
+            "depends",
+            "predepends"
+          ],
+          "features": [
+            "recommends",
+            "optional"
+          ]
+        }
+      },
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        }
+      ],
+      "checks": [
+        {
+          "id": "rustc-available",
+          "command": "command -v rustc >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "cargo-available",
+          "command": "command -v cargo >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "rustfmt-available",
+          "command": "command -v rustfmt >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "clippy-driver-available",
+          "command": "command -v clippy-driver >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "rustc-version",
+          "command": "rustc --version >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "cargo-version",
+          "command": "cargo --version >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "rustfmt-version",
+          "command": "rustfmt --version >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "cargo-clippy-version",
+          "command": "cargo clippy --version >/dev/null 2>&1",
+          "severity": "fatal"
+        }
+      ],
+      "template_values": {
+        "DOMAIN_ENV_EXTRA": ": \"${CARGO_HOME:=$XDG_DATA_HOME/cargo}\"\nif command -v _path_prepend >/dev/null 2>&1; then\n  _path_prepend \"$CARGO_HOME/bin\"\nelse\n  case \":$PATH:\" in\n    *\":$CARGO_HOME/bin:\"*) ;;\n    *) PATH=\"$CARGO_HOME/bin${PATH:+:$PATH}\"; export PATH ;;\n  esac\nfi\nexport CARGO_HOME PATH"
       }
     }
   ]

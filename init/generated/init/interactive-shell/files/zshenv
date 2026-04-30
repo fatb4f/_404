@@ -9,6 +9,8 @@
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+: "${ZIM_HOME:=$XDG_CACHE_HOME/zim}"
+: "${ZIM_CONFIG_FILE:=$DOTS_HOME/.config/zsh/zimrc}"
 : "${INIT_ROOT:=$DOTS_HOME/.config/init}"
 : "${INIT_LOADER:=$INIT_ROOT/loader.sh}"
 

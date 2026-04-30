@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+
+: "${STAGE_ROOT:?STAGE_ROOT is required}"
+. "$STAGE_ROOT/10-terminal/init.sh"
+
+cwd="${1:-$PWD}"
+shift || true
+kitty_launch_with_cwd "$cwd" "$@"

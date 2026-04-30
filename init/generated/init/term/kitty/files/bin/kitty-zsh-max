@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+set -eu
+
+exec kitty --detach --start-as maximized /usr/bin/env zsh -l

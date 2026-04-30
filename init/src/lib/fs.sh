@@ -112,7 +112,7 @@ expand_path_template() {
 }
 
 install_pkg() {
-  pkg=$1
+  [ "$#" -gt 0 ] || return 0
 
   if [ "$(id -u)" -eq 0 ]; then
     pm_prefix=""
@@ -123,15 +123,15 @@ install_pkg() {
   fi
 
   if command -v apt-get >/dev/null 2>&1; then
-    [ "${DOMAIN_DRY_RUN:-${DRY_RUN:-0}}" -eq 1 ] && { printf 'would install pkg: %s via apt-get\n' "$pkg"; return 0; }
+    [ "${DOMAIN_DRY_RUN:-${DRY_RUN:-0}}" -eq 1 ] && { printf 'would install pkg: %s via apt-get\n' "$*"; return 0; }
     $pm_prefix apt-get update
-    $pm_prefix env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$pkg"
+    $pm_prefix env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$@"
     return 0
   fi
 
   if command -v pacman >/dev/null 2>&1; then
-    [ "${DOMAIN_DRY_RUN:-${DRY_RUN:-0}}" -eq 1 ] && { printf 'would install pkg: %s via pacman\n' "$pkg"; return 0; }
-    $pm_prefix pacman -Sy --noconfirm --needed "$pkg"
+    [ "${DOMAIN_DRY_RUN:-${DRY_RUN:-0}}" -eq 1 ] && { printf 'would install pkg: %s via pacman\n' "$*"; return 0; }
+    $pm_prefix pacman -Sy --noconfirm --needed "$@"
     return 0
   fi
 

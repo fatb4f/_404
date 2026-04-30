@@ -11,6 +11,10 @@
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
 : "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
 [ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
+case $TOOL_PATH_HOME in
+  */bin) ;;
+  *) TOOL_PATH_HOME=$HOME/.local/bin; TOOL_PREFIX_HOME=${TOOL_PATH_HOME%/bin} ;;
+esac
 : "${INIT_ROOT:=$DOTS_HOME/.config/init}"
 : "${INIT_LOADER:=$INIT_ROOT/loader.sh}"
 
@@ -33,6 +37,12 @@ if [ -r "$XDG_OPT_HOME/cue/env.sh" ]; then
 fi
 if [ -r "$XDG_OPT_HOME/go/env.sh" ]; then
   . "$XDG_OPT_HOME/go/env.sh"
+fi
+if [ -r "$XDG_OPT_HOME/ripgrep/env.sh" ]; then
+  . "$XDG_OPT_HOME/ripgrep/env.sh"
+fi
+if [ -r "$XDG_OPT_HOME/rust/env.sh" ]; then
+  . "$XDG_OPT_HOME/rust/env.sh"
 fi
 if [ -r "$XDG_OPT_HOME/0-noninteractive-shell/path.sh" ]; then
   . "$XDG_OPT_HOME/0-noninteractive-shell/path.sh"

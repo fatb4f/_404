@@ -7,7 +7,13 @@ DOMAIN_STAGE='10-terminal'
 DOMAIN_RING='terminal'
 DOMAIN_PROVIDER='host_pkg'
 DOMAIN_PRIMARY_BIN='kitty'
+DOMAIN_BINS='kitty'
 DOMAIN_HOST_PACKAGE='kitty'
+DOMAIN_HOST_PACKAGES='kitty'
+DOMAIN_HOST_PACKAGE_ARCH='kitty'
+DOMAIN_HOST_PACKAGES_ARCH='kitty'
+DOMAIN_HOST_PACKAGE_DEBIAN='kitty'
+DOMAIN_HOST_PACKAGES_DEBIAN='kitty'
 DOMAIN_NPM_PACKAGE=''
 DOMAIN_CARGO_CRATE=''
 DOMAIN_GO_MODULE=''
@@ -24,15 +30,16 @@ DOMAIN_OUTPUT_DIR='generated/init/term/kitty'
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
 : "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
 [ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
+case $TOOL_PATH_HOME in
+  */bin) ;;
+  *) TOOL_PATH_HOME=$HOME/.local/bin; TOOL_PREFIX_HOME=${TOOL_PATH_HOME%/bin} ;;
+esac
 
 : "${DOMAIN_PREFIX:=$XDG_OPT_HOME/1-terminal}"
 : "${DOMAIN_STATE:=$XDG_STATE_HOME/_404/1-terminal}"
 : "${DOMAIN_CACHE:=$XDG_CACHE_HOME/_404/1-terminal}"
 : "${DOMAIN_BIN_HOME:=$XDG_OPT_HOME/1-terminal/bin}"
 : "${DOMAIN_SHARE_HOME:=$XDG_OPT_HOME/1-terminal/share}"
-
-export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME TOOL_PREFIX_HOME
-export DOMAIN_PREFIX DOMAIN_STATE DOMAIN_CACHE DOMAIN_BIN_HOME DOMAIN_SHARE_HOME
 
 DOMAIN_REQUIRES_READY='00-shell interactive-shell'
 
@@ -44,6 +51,7 @@ files/overrides.kitty.conf|$DOMAIN_PREFIX/kitty/overrides.kitty.conf|0644
 files/bin/kitty-t0|$DOMAIN_PREFIX/bin/kitty-t0|0755
 files/bin/kitty-launch-with-cwd|$DOMAIN_PREFIX/bin/kitty-launch-with-cwd|0755
 files/bin/kitty-launch-desktop|$DOMAIN_PREFIX/bin/kitty-launch-desktop|0755
+files/bin/kitty-zsh-max|$DOMAIN_PREFIX/bin/kitty-zsh-max|0755
 files/applications/stage-kitty.desktop|$DOMAIN_PREFIX/applications/stage-kitty.desktop|0644
 files/applications/stage-kitty-workflow.desktop|$DOMAIN_PREFIX/applications/stage-kitty-workflow.desktop|0644'
 DOMAIN_COPIES=''
@@ -52,9 +60,10 @@ $DOMAIN_PREFIX/kitty/overrides.kitty.conf|$XDG_CONFIG_HOME/kitty/overrides.kitty
 $DOMAIN_PREFIX/bin/kitty-t0|$TOOL_PATH_HOME/kitty-t0
 $DOMAIN_PREFIX/bin/kitty-launch-with-cwd|$TOOL_PATH_HOME/kitty-launch-with-cwd
 $DOMAIN_PREFIX/bin/kitty-launch-desktop|$TOOL_PATH_HOME/kitty-launch-desktop
+$DOMAIN_PREFIX/bin/kitty-zsh-max|$TOOL_PATH_HOME/kitty-zsh-max
 $DOMAIN_PREFIX/applications/stage-kitty.desktop|$XDG_DATA_HOME/applications/stage-kitty.desktop
 $DOMAIN_PREFIX/applications/stage-kitty-workflow.desktop|$XDG_DATA_HOME/applications/stage-kitty-workflow.desktop'
 DOMAIN_CHECKS='stage-ready|test -f $XDG_STATE_HOME/_404/bootstrap/10-terminal.ready|degraded
 files-present|test -f $DOMAIN_PREFIX/kitty/kitty.conf && test -x $DOMAIN_PREFIX/bin/kitty-t0|degraded
-shell-parse|sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop|fatal
+shell-parse|sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop $DOMAIN_PREFIX/bin/kitty-zsh-max|fatal
 kitty-available|command -v kitty >/dev/null 2>&1|warning'

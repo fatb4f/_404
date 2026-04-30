@@ -16,6 +16,10 @@ _404_INIT_LOADER_LOADED=1
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
 : "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
 [ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
+case $TOOL_PATH_HOME in
+  */bin) ;;
+  *) TOOL_PATH_HOME=$HOME/.local/bin; TOOL_PREFIX_HOME=${TOOL_PATH_HOME%/bin} ;;
+esac
 : "${INIT_ROOT:=$DOTS_HOME/.config/init}"
 : "${INIT_LOADER:=$INIT_ROOT/loader.sh}"
 
