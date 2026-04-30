@@ -17,6 +17,7 @@ Validate release/config readiness without broad mutation.
 - Run syntax checks.
 - Run dry-run/doctor commands explicitly listed by the slice.
 - Report missing checks.
+- If semantic evidence is part of the slice, stage the intended changeset explicitly, run `sem` against `git diff --cached`, and vet only the repo-owned `check-status.json` and `semantic-diff.json` envelopes.
 
 ## Forbidden scope
 

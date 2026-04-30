@@ -113,6 +113,11 @@ def apply_template_patch(
     file_specs.extend(patch.get("files_add") or [])
     domain["files"] = dedupe_by_key(file_specs, "source")
 
+    copy_specs = list(domain.get("copies") or [])
+    copy_specs.extend(patch.get("copies") or [])
+    if copy_specs:
+        domain["copies"] = dedupe_by_key(copy_specs, "dst")
+
     check_specs = list(domain.get("checks") or [])
     remove_checks = set(patch.get("checks_remove") or [])
     if remove_checks:
@@ -211,6 +216,7 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
     paths = derive_paths(roots, domain)
     pv = provider_values(domain)
     files_rows = [[f["source"], f["target"], f.get("mode", "0644")] for f in domain.get("files", [])]
+    copy_rows = [[c["src"], c["dst"], c.get("mode", "0644")] for c in domain.get("copies", [])]
     link_rows = [[l["source"], l["target"]] for l in domain.get("links", [])]
     check_rows = [[c["id"], c["command"], c.get("severity", "degraded")] for c in domain.get("checks", [])]
 
@@ -232,6 +238,15 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
             "mode": f.get("mode", "0644"),
             "activation": "atomic-copy",
             "role": "projected",
+        })
+    for c in domain.get("copies", []):
+        owns.append({
+            "id": Path(c["dst"]).name,
+            "source": c["src"],
+            "target": c["dst"],
+            "mode": c.get("mode", "0644"),
+            "activation": "atomic-copy",
+            "role": "activated",
         })
     for l in domain.get("links", []):
         owns.append({
@@ -258,6 +273,7 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         "DOMAIN_OUTPUT_DIR": domain.get("output_dir", f"{DEFAULT_OUTPUT_DIR}/{domain['id']}"),
         "DOMAIN_REQUIRES_READY": " ".join(requires_ready),
         "DOMAIN_FILES": spec_lines(files_rows),
+        "DOMAIN_COPIES": spec_lines(copy_rows),
         "DOMAIN_LINKS": spec_lines(link_rows),
         "DOMAIN_CHECKS": spec_lines(check_rows),
         "REQUIRES_CUE": cue_list(domain.get("requires", [])),

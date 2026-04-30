@@ -35,6 +35,9 @@ def project(fragment: dict[str, Any]) -> dict[str, Any]:
             "src/templates/codex/files/roles/implementer.md.tmpl": "files/roles/implementer.md",
             "src/templates/codex/files/roles/release-checker.md.tmpl": "files/roles/release-checker.md",
             "src/templates/codex/files/skills/cue/SKILL.md.tmpl": "files/skills/cue/SKILL.md",
+            "src/templates/codex/files/skills/sem/SKILL.md.tmpl": "files/skills/sem/SKILL.md",
+            "src/templates/codex/files/skills/repo-search/SKILL.md.tmpl": "files/skills/repo-search/SKILL.md",
+            "src/templates/codex/files/bin/repo-rg.tmpl": "files/bin/repo-rg",
             "src/templates/codex/files/bin/_404-codex.tmpl": "files/bin/_404-codex",
         },
         "files_remove": [
@@ -75,7 +78,13 @@ def project(fragment: dict[str, Any]) -> dict[str, Any]:
                 "mode": "0644",
             },
             {"source": "files/skills/cue/SKILL.md", "target": "$XDG_CONFIG_HOME/codex/skills/cue/SKILL.md", "mode": "0644"},
+            {"source": "files/skills/sem/SKILL.md", "target": "$XDG_CONFIG_HOME/codex/skills/sem/SKILL.md", "mode": "0644"},
+            {"source": "files/skills/repo-search/SKILL.md", "target": "$XDG_CONFIG_HOME/codex/skills/repo-search/SKILL.md", "mode": "0644"},
+            {"source": "files/bin/repo-rg", "target": "$DOMAIN_PREFIX/bin/repo-rg", "mode": "0755"},
             {"source": "files/bin/_404-codex", "target": "$DOMAIN_PREFIX/bin/_404-codex", "mode": "0755"},
+        ],
+        "copies": [
+            {"src": "files/bin/repo-rg", "dst": "$TOOL_PATH_HOME/repo-rg", "mode": "0755"},
         ],
         "checks_remove": [
             "hooks-present",
@@ -99,7 +108,7 @@ def project(fragment: dict[str, Any]) -> dict[str, Any]:
             },
             {
                 "id": "skill-present",
-                "command": "test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md",
+                "command": "test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md && test -f $XDG_CONFIG_HOME/codex/skills/sem/SKILL.md && test -f $XDG_CONFIG_HOME/codex/skills/repo-search/SKILL.md",
                 "severity": "fatal",
             },
             {
@@ -113,13 +122,23 @@ def project(fragment: dict[str, Any]) -> dict[str, Any]:
                 "severity": "fatal",
             },
             {
+                "id": "repo-rg-live",
+                "command": "test -x $TOOL_PATH_HOME/repo-rg && test ! -L $TOOL_PATH_HOME/repo-rg",
+                "severity": "fatal",
+            },
+            {
+                "id": "repo-rg-present",
+                "command": "test -x $DOMAIN_PREFIX/bin/repo-rg",
+                "severity": "fatal",
+            },
+            {
                 "id": "toml-parse",
                 "command": "python3 -c 'import os,pathlib,tomllib; tomllib.loads(pathlib.Path(os.environ[\"XDG_CONFIG_HOME\"] + \"/codex/config.toml\").read_text())'",
                 "severity": "fatal",
             },
             {
                 "id": "hook-shell-parse",
-                "command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/_404-codex",
+                "command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/repo-rg $DOMAIN_PREFIX/bin/_404-codex",
                 "severity": "fatal",
             },
         ],
@@ -141,5 +160,6 @@ def project(fragment: dict[str, Any]) -> dict[str, Any]:
             "CODEX_AGENTS_TARGET": "$XDG_CONFIG_HOME/codex/AGENTS.md",
             "CODEX_ROLES_TARGET": "$XDG_CONFIG_HOME/codex/roles",
             "CODEX_SKILLS_TARGET": codex_profile.get("skills_target", "$XDG_CONFIG_HOME/codex/skills"),
+            "CODEX_BIN_TARGET": "$DOMAIN_PREFIX/bin",
         },
     }

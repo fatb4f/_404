@@ -132,12 +132,44 @@ domain: schema.#Domain & {
 		"role": "projected"
 	},
 	{
+		"id": "SKILL.md",
+		"source": "files/skills/sem/SKILL.md",
+		"target": "$XDG_CONFIG_HOME/codex/skills/sem/SKILL.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "SKILL.md",
+		"source": "files/skills/repo-search/SKILL.md",
+		"target": "$XDG_CONFIG_HOME/codex/skills/repo-search/SKILL.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "repo-rg",
+		"source": "files/bin/repo-rg",
+		"target": "$DOMAIN_PREFIX/bin/repo-rg",
+		"mode": "0755",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
 		"id": "_404-codex",
 		"source": "files/bin/_404-codex",
 		"target": "$DOMAIN_PREFIX/bin/_404-codex",
 		"mode": "0755",
 		"activation": "atomic-copy",
 		"role": "projected"
+	},
+	{
+		"id": "repo-rg",
+		"source": "files/bin/repo-rg",
+		"target": "$TOOL_PATH_HOME/repo-rg",
+		"mode": "0755",
+		"activation": "atomic-copy",
+		"role": "activated"
 	},
 	{
 		"id": "_404-codex",
@@ -180,12 +212,17 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "skill-present",
-		"command": "test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md",
+		"command": "test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md && test -f $XDG_CONFIG_HOME/codex/skills/sem/SKILL.md && test -f $XDG_CONFIG_HOME/codex/skills/repo-search/SKILL.md",
 		"severity": "fatal"
 	},
 	{
 		"id": "launcher-present",
 		"command": "test -x $DOMAIN_PREFIX/bin/_404-codex",
+		"severity": "fatal"
+	},
+	{
+		"id": "repo-rg-present",
+		"command": "test -x $DOMAIN_PREFIX/bin/repo-rg",
 		"severity": "fatal"
 	},
 	{
@@ -199,8 +236,13 @@ domain: schema.#Domain & {
 		"severity": "fatal"
 	},
 	{
+		"id": "repo-rg-live",
+		"command": "test -x $TOOL_PATH_HOME/repo-rg && test ! -L $TOOL_PATH_HOME/repo-rg",
+		"severity": "fatal"
+	},
+	{
 		"id": "hook-shell-parse",
-		"command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/_404-codex",
+		"command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/repo-rg $DOMAIN_PREFIX/bin/_404-codex",
 		"severity": "fatal"
 	}
 ]

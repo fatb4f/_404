@@ -22,3 +22,17 @@ state. The projection surface should stay reproducible from `init/src/**` and
 - Inspect only the exact files named by the slice unless asked for more.
 - Ask for a narrower slice if the task scope is broad.
 - Do not add commit automation here.
+
+## Sem skill
+
+Use the `sem` skill before broad source inspection when the task involves semantic diffs, changed entities, symbol context, blame, history, or impact analysis.
+
+Prefer `.codex/frames/sem-summary.md` over crawling source files.
+
+When `sem` is part of a guarded commit path, stage the intended changeset explicitly, run `sem` only against `git diff --cached`, and wrap the raw output in repo-owned `check-status.json` and `semantic-diff.json` envelopes before CUE vetting.
+
+## Repo search skill
+
+Use the `repo-search` skill for targeted literal or regex lookup inside one git repository.
+
+Prefer `repo-rg` over ad hoc `find | grep` chains when the task is a lookup, not a broad crawl.

@@ -10,6 +10,7 @@ set -eu
 : "${CODEX_HOME:=$XDG_CONFIG_HOME/codex}"
 
 profile=${DOTS_PROFILE:-slim}
+PATH="$HOME/.local/bin:$PATH"
 
 case "${1-}" in
   "")
@@ -28,5 +29,5 @@ esac
 DOTS_PROFILE=$profile
 DOTS_AGENT_SURFACE="codex"
 
-export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME CODEX_HOME DOTS_PROFILE DOTS_AGENT_SURFACE
+export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME CODEX_HOME DOTS_PROFILE DOTS_AGENT_SURFACE PATH
 exec codex --profile "$profile" "$@"

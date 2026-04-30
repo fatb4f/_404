@@ -23,6 +23,12 @@ package schema
 	mode:   #Mode | *"0644"
 }
 
+#CopySpec: {
+	src:  string
+	dst:  string
+	mode: #Mode | *"0644"
+}
+
 #LinkSpec: {
 	source: string
 	target: string
@@ -69,6 +75,7 @@ package schema
 		}
 	}
 	files: [...#FileSpec]
+	copies?: [...#CopySpec]
 	links?: [...#LinkSpec]
 	checks: [...#CheckSpec]
 }
