@@ -1,7 +1,7 @@
-# generated domain runtime metadata: generated/init/term/kitty
+# generated domain runtime metadata: 1-terminal
 # shellcheck shell=sh
 
-DOMAIN_ID='generated/init/term/kitty'
+DOMAIN_ID='1-terminal'
 DOMAIN_NS='TERMINAL'
 DOMAIN_STAGE='10-terminal'
 DOMAIN_RING='terminal'
@@ -22,6 +22,8 @@ DOMAIN_OUTPUT_DIR='generated/init/term/kitty'
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+: "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
+[ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
 
 : "${DOMAIN_PREFIX:=$XDG_OPT_HOME/1-terminal}"
 : "${DOMAIN_STATE:=$XDG_STATE_HOME/_404/1-terminal}"
@@ -29,7 +31,7 @@ DOMAIN_OUTPUT_DIR='generated/init/term/kitty'
 : "${DOMAIN_BIN_HOME:=$XDG_OPT_HOME/1-terminal/bin}"
 : "${DOMAIN_SHARE_HOME:=$XDG_OPT_HOME/1-terminal/share}"
 
-export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME
+export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME TOOL_PREFIX_HOME
 export DOMAIN_PREFIX DOMAIN_STATE DOMAIN_CACHE DOMAIN_BIN_HOME DOMAIN_SHARE_HOME
 
 DOMAIN_REQUIRES_READY='00-shell interactive-shell'

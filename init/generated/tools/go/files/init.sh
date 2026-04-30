@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# generated: 0-noninteractive-shell init
+# generated: go init
 # shellcheck shell=sh
 
 : "${DOTS_REPO:=src}"
@@ -13,27 +13,19 @@
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
 : "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
 [ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
-: "${NONINTERACTIVE_SHELL_PREFIX:=$XDG_OPT_HOME/0-noninteractive-shell}"
+: "${GO_PREFIX:=$XDG_OPT_HOME/go}"
 
 # Source the domain env before the ready-marker check. This is intentionally
 # limited to env only: it lets customized XDG_STATE_HOME/TOOL_PATH_HOME move
 # with the generated seed while still preventing full domain init before ready.
-if [ -r "$NONINTERACTIVE_SHELL_PREFIX/env.sh" ]; then
-  . "$NONINTERACTIVE_SHELL_PREFIX/env.sh"
+if [ -r "$GO_PREFIX/env.sh" ]; then
+  . "$GO_PREFIX/env.sh"
 fi
 
-ready_marker="$XDG_STATE_HOME/_404/bootstrap/00-shell.ready"
+ready_marker="$XDG_STATE_HOME/_404/bootstrap/40-tools.ready"
 [ -f "$ready_marker" ] || return 0 2>/dev/null || exit 0
 
-if [ -r "${NONINTERACTIVE_SHELL_PREFIX}/require.sh" ]; then
-  . "${NONINTERACTIVE_SHELL_PREFIX}/require.sh"
-fi
-if [ -r "${NONINTERACTIVE_SHELL_PREFIX}/env.sh" ]; then
-  . "${NONINTERACTIVE_SHELL_PREFIX}/env.sh"
-fi
-if [ -r "${NONINTERACTIVE_SHELL_PREFIX}/path.sh" ]; then
-  . "${NONINTERACTIVE_SHELL_PREFIX}/path.sh"
-fi
+
 
 if [ -d "$TOOL_PATH_HOME" ]; then
   case ":$PATH:" in

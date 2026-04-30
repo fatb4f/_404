@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 from pathlib import Path
-from string import Template
 from typing import Any
 
-GENERATED_FILES = {
+BASE_GENERATED_FILES = {
     "src/templates/domain/domain.env.sh.tmpl": "domain.env.sh",
     "src/templates/domain/files/env.sh.tmpl": "files/env.sh",
     "src/templates/domain/files/init.sh.tmpl": "files/init.sh",
@@ -16,12 +16,19 @@ GENERATED_FILES = {
     "src/templates/domain/domain.cue.tmpl": "domain.cue",
 }
 
+NONINTERACTIVE_SHELL_FILES = {
+    "src/templates/domain/files/env-loader.sh.tmpl": "files/env-loader.sh",
+    "src/templates/domain/files/bash_profile.tmpl": "files/bash_profile",
+    "src/templates/domain/files/bashrc.tmpl": "files/bashrc",
+}
+
+INTERACTIVE_SHELL_FILES = {
+    "src/templates/domain/files/zshenv.tmpl": "files/zshenv",
+    "src/templates/domain/files/zshrc.tmpl": "files/zshrc",
+}
+
 EXECUTABLE_OUTPUTS = {"install.sh", "check.sh"}
 DEFAULT_OUTPUT_DIR = "generated/domains"
-
-
-def domain_id(domain: dict[str, Any]) -> str:
-    return domain.get("output_dir", f"{DEFAULT_OUTPUT_DIR}/{domain['id']}")
 
 
 def cue_list(values: list[str]) -> str:
@@ -101,20 +108,24 @@ def extra_env_exports(domain: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def generated_provides(domain: dict[str, Any], generated_id: str) -> list[str]:
-    provides = []
-    for value in domain.get("provides", []):
-        if value.startswith("domain."):
-            provides.append(f"domain.{generated_id}")
-        else:
-            provides.append(value)
-    return provides
+def shell_env_source_lines(domains: list[dict[str, Any]]) -> str:
+    lines = []
+    for domain in domains:
+        domain_id = domain["id"]
+        if not any(f.get("source") == "files/env.sh" for f in domain.get("files", [])):
+            continue
+        lines.append(f'if [ -r "$XDG_OPT_HOME/{domain_id}/env.sh" ]; then')
+        lines.append(f'  . "$XDG_OPT_HOME/{domain_id}/env.sh"')
+        lines.append('fi')
+    lines.append('if [ -r "$XDG_OPT_HOME/0-noninteractive-shell/path.sh" ]; then')
+    lines.append('  . "$XDG_OPT_HOME/0-noninteractive-shell/path.sh"')
+    lines.append('fi')
+    return "\n".join(lines)
 
 
-def render_values(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, str]:
+def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[dict[str, Any]]) -> dict[str, str]:
     paths = derive_paths(roots, domain)
     pv = provider_values(domain)
-    generated_id = domain_id(domain)
     files_rows = [[f["source"], f["target"], f.get("mode", "0644")] for f in domain.get("files", [])]
     link_rows = [[l["source"], l["target"]] for l in domain.get("links", [])]
     check_rows = [[c["id"], c["command"], c.get("severity", "degraded")] for c in domain.get("checks", [])]
@@ -155,7 +166,7 @@ def render_values(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, st
     return {
         **paths,
         **pv,
-        "DOMAIN_ID": generated_id,
+        "DOMAIN_ID": domain["id"],
         "DOMAIN_NS": domain["namespace"],
         "DOMAIN_STAGE": domain["stage"],
         "DOMAIN_RING": domain["ring"],
@@ -166,16 +177,22 @@ def render_values(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, st
         "DOMAIN_LINKS": spec_lines(link_rows),
         "DOMAIN_CHECKS": spec_lines(check_rows),
         "REQUIRES_CUE": cue_list(domain.get("requires", [])),
-        "PROVIDES_CUE": cue_list(generated_provides(domain, generated_id)),
+        "PROVIDES_CUE": cue_list(domain.get("provides", [])),
         "OWNS_CUE": cue_records(owns),
         "CHECKS_CUE": cue_records(checks),
         "INIT_SOURCE_LINES": init_source_lines(domain),
+        "SHELL_ENV_SOURCE_LINES": shell_env_source_lines(domains),
         "EXTRA_ENV_EXPORTS": extra_env_exports(domain),
     }
 
 
 def render_template(text: str, values: dict[str, str]) -> str:
-    return Template(text).safe_substitute(values)
+    # Deliberately use @TOKEN@ placeholders instead of string.Template.
+    # Shell files contain many runtime $VARS; replacing only @TOKENS@
+    # avoids freezing XDG_STATE_HOME/TOOL_PATH_HOME into generated shims.
+    for key, value in values.items():
+        text = text.replace(f"@{key}@", str(value))
+    return text
 
 
 def main() -> None:
@@ -188,13 +205,20 @@ def main() -> None:
     seed_path = root / args.seed
     seed = json.loads(seed_path.read_text())
     roots = seed["roots"]
+    domains = seed["domains"]
 
-    for domain in seed["domains"]:
-        values = render_values(roots, domain)
+    for domain in domains:
+        values = render_values(roots, domain, domains)
         domain_dir = root / values["DOMAIN_OUTPUT_DIR"]
         (domain_dir / "files").mkdir(parents=True, exist_ok=True)
 
-        for tmpl_rel, out_rel in GENERATED_FILES.items():
+        generated_files = dict(BASE_GENERATED_FILES)
+        if domain.get("stage") == "00-shell":
+            generated_files.update(NONINTERACTIVE_SHELL_FILES)
+        if domain.get("stage") == "interactive-shell":
+            generated_files.update(INTERACTIVE_SHELL_FILES)
+
+        for tmpl_rel, out_rel in generated_files.items():
             tmpl = root / tmpl_rel
             out = domain_dir / out_rel
             out.parent.mkdir(parents=True, exist_ok=True)

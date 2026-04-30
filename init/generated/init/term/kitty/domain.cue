@@ -3,7 +3,7 @@ package domain
 import "stage.local/src/schema"
 
 domain: schema.#Domain & {
-	id:        "generated/init/term/kitty"
+	id:        "1-terminal"
 	namespace: "TERMINAL"
 	stage:     "10-terminal"
 	ring:      "terminal"

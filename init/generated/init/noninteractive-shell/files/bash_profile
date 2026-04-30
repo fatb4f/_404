@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# generated-compatible minimal .zshenv
-# Keep this tiny and recoverable.
+# stage minimal .bash_profile
+# Login shell scope only. Keep this domain isolated.
 
 : "${DOTS_REPO:=src}"
 : "${DOTS_DIR:=dots}"

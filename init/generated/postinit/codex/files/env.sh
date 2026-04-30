@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# generated: generated/postinit/codex env
+# generated: 2-agent env
 # shellcheck shell=sh
 
 : "${DOTS_REPO:=src}"
@@ -11,8 +11,10 @@
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
 : "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+: "${TOOL_PREFIX_HOME:=${TOOL_PATH_HOME%/bin}}"
+[ "$TOOL_PREFIX_HOME" != "$TOOL_PATH_HOME" ] || TOOL_PREFIX_HOME=$(dirname "$TOOL_PATH_HOME")
 
-export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME
+export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME TOOL_PREFIX_HOME
 
 : "${AGENT_PREFIX:=$XDG_OPT_HOME/2-agent}"
 : "${AGENT_STATE:=$XDG_STATE_HOME/_404/2-agent}"

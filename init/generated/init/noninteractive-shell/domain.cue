@@ -3,7 +3,7 @@ package domain
 import "stage.local/src/schema"
 
 domain: schema.#Domain & {
-	id:        "generated/init/noninteractive-shell"
+	id:        "0-noninteractive-shell"
 	namespace: "NONINTERACTIVE_SHELL"
 	stage:     "00-shell"
 	ring:      "substrate"
@@ -57,6 +57,30 @@ domain: schema.#Domain & {
 		"role": "projected"
 	},
 	{
+		"id": "env-loader.sh",
+		"source": "files/env-loader.sh",
+		"target": "$XDG_CONFIG_HOME/_404/env.sh",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "bash_profile",
+		"source": "files/bash_profile",
+		"target": "$HOME/.bash_profile",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "bashrc",
+		"source": "files/bashrc",
+		"target": "$HOME/.bashrc",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
 		"id": "path.sh",
 		"source": "files/path.sh",
 		"target": "$DOMAIN_PREFIX/path.sh",
@@ -81,12 +105,32 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "files-present",
-		"command": "test -f $DOMAIN_PREFIX/init.sh && test -f $DOMAIN_PREFIX/env.sh && test -f $DOMAIN_PREFIX/path.sh && test -f $DOMAIN_PREFIX/require.sh",
+		"command": "test -f $DOMAIN_PREFIX/init.sh && test -f $DOMAIN_PREFIX/env.sh && test -f $DOMAIN_PREFIX/path.sh && test -f $DOMAIN_PREFIX/require.sh && test -f $XDG_CONFIG_HOME/_404/env.sh && test -f $HOME/.bash_profile && test -f $HOME/.bashrc",
 		"severity": "fatal"
 	},
 	{
 		"id": "shell-parse",
-		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/path.sh $DOMAIN_PREFIX/require.sh",
+		"command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/path.sh $DOMAIN_PREFIX/require.sh $XDG_CONFIG_HOME/_404/env.sh $HOME/.bash_profile $HOME/.bashrc",
+		"severity": "fatal"
+	},
+	{
+		"id": "bash-available",
+		"command": "command -v bash >/dev/null 2>&1",
+		"severity": "fatal"
+	},
+	{
+		"id": "env-loader-parse",
+		"command": "test -f $XDG_CONFIG_HOME/_404/env.sh && sh -n $XDG_CONFIG_HOME/_404/env.sh",
+		"severity": "fatal"
+	},
+	{
+		"id": "bash_profile-parse",
+		"command": "test -f $HOME/.bash_profile && sh -n $HOME/.bash_profile",
+		"severity": "fatal"
+	},
+	{
+		"id": "bashrc-parse",
+		"command": "test -f $HOME/.bashrc && sh -n $HOME/.bashrc",
 		"severity": "fatal"
 	}
 ]

@@ -3,7 +3,7 @@ package domain
 import "stage.local/src/schema"
 
 domain: schema.#Domain & {
-	id:        "generated/postinit/codex"
+	id:        "2-agent"
 	namespace: "AGENT"
 	stage:     "20-agent"
 	ring:      "agent"

@@ -3,7 +3,7 @@ package domain
 import "stage.local/src/schema"
 
 domain: schema.#Domain & {
-	id:        "generated/init/interactive-shell"
+	id:        "0-interactive-shell"
 	namespace: "INTERACTIVE_SHELL"
 	stage:     "interactive-shell"
 	ring:      "substrate"
@@ -81,12 +81,12 @@ domain: schema.#Domain & {
 	},
 	{
 		"id": "zshenv-parse",
-		"command": "test -f $HOME/.zshenv && zsh -n $HOME/.zshenv",
+		"command": "test -f $HOME/.zshenv && sh -n $HOME/.zshenv",
 		"severity": "fatal"
 	},
 	{
 		"id": "zshrc-parse",
-		"command": "test -f $HOME/.zshrc && zsh -n $HOME/.zshrc",
+		"command": "test -f $HOME/.zshrc && sh -n $HOME/.zshrc",
 		"severity": "fatal"
 	},
 	{

@@ -27,9 +27,9 @@ provider_install_payload() {
       fi
       [ -n "${DOMAIN_NPM_PACKAGE:-}" ] || { printf >&2 'DOMAIN_NPM_PACKAGE missing for %s\n' "$DOMAIN_ID"; return 64; }
       if [ "${DOMAIN_DRY_RUN:-0}" -eq 1 ]; then
-        printf 'would npm install -g --prefix %s %s\n' "$HOME/.local" "$DOMAIN_NPM_PACKAGE"
+        printf 'would npm install -g --prefix %s %s\n' "$TOOL_PREFIX_HOME" "$DOMAIN_NPM_PACKAGE"
       else
-        npm install -g --prefix "$HOME/.local" "$DOMAIN_NPM_PACKAGE"
+        npm install -g --prefix "$TOOL_PREFIX_HOME" "$DOMAIN_NPM_PACKAGE"
       fi
       ;;
 
@@ -38,9 +38,9 @@ provider_install_payload() {
       command -v cargo-binstall >/dev/null 2>&1 || { printf >&2 'cargo-binstall required for %s\n' "$DOMAIN_ID"; return 127; }
       [ -n "${DOMAIN_CARGO_CRATE:-}" ] || { printf >&2 'DOMAIN_CARGO_CRATE missing for %s\n' "$DOMAIN_ID"; return 64; }
       if [ "${DOMAIN_DRY_RUN:-0}" -eq 1 ]; then
-        printf 'would cargo binstall --no-confirm --disable-telemetry --root %s %s\n' "$HOME/.local" "$DOMAIN_CARGO_CRATE"
+        printf 'would cargo binstall --no-confirm --disable-telemetry --root %s %s\n' "$TOOL_PREFIX_HOME" "$DOMAIN_CARGO_CRATE"
       else
-        cargo binstall --no-confirm --disable-telemetry --root "$HOME/.local" "$DOMAIN_CARGO_CRATE"
+        cargo binstall --no-confirm --disable-telemetry --root "$TOOL_PREFIX_HOME" "$DOMAIN_CARGO_CRATE"
       fi
       ;;
 
@@ -48,9 +48,9 @@ provider_install_payload() {
       command -v cargo >/dev/null 2>&1 || { printf >&2 'cargo required for %s\n' "$DOMAIN_ID"; return 127; }
       [ -n "${DOMAIN_CARGO_CRATE:-}" ] || { printf >&2 'DOMAIN_CARGO_CRATE missing for %s\n' "$DOMAIN_ID"; return 64; }
       if [ "${DOMAIN_DRY_RUN:-0}" -eq 1 ]; then
-        printf 'would cargo install --locked --root %s %s\n' "$HOME/.local" "$DOMAIN_CARGO_CRATE"
+        printf 'would cargo install --locked --root %s %s\n' "$TOOL_PREFIX_HOME" "$DOMAIN_CARGO_CRATE"
       else
-        cargo install --locked --root "$HOME/.local" "$DOMAIN_CARGO_CRATE"
+        cargo install --locked --root "$TOOL_PREFIX_HOME" "$DOMAIN_CARGO_CRATE"
       fi
       ;;
 

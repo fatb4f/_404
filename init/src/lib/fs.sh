@@ -10,6 +10,13 @@ xdg_opt_home() { printf '%s\n' "${XDG_OPT_HOME:-$(root_dots_home)/.local/opt}"; 
 xdg_state_home() { printf '%s\n' "${XDG_STATE_HOME:-$HOME/.local/state}"; }
 xdg_cache_home() { printf '%s\n' "${XDG_CACHE_HOME:-$HOME/.cache}"; }
 tool_path_home() { printf '%s\n' "${TOOL_PATH_HOME:-$HOME/.local/bin}"; }
+tool_prefix_home() {
+  tp=$(tool_path_home)
+  case "$tp" in
+    */bin) dirname "$tp" ;;
+    *) printf '%s\n' "$tp" ;;
+  esac
+}
 
 bootstrap_state_dir() { printf '%s/_404/bootstrap\n' "$(xdg_state_home)"; }
 stage_ready_path() { printf '%s/%s.ready\n' "$(bootstrap_state_dir)" "${1:?stage required}"; }

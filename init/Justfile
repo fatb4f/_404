@@ -1,26 +1,31 @@
 set shell := ["sh", "-eu", "-c"]
 
 python := "python3"
-domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex"
+domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex generated/tools/go"
+
+# Compose optional domains.d fragments into a materialized seed.
+compose-seed:
+	{{python}} src/gen/compose_seed.py --root . --seed src/domains/seed.json --fragments domains.d --out src/domains/seed.composed.json
 
 # Regenerate domain artifacts from the bootstrap seed.
-gen:
-	{{python}} src/gen/domain.py --root . --seed src/domains/seed.json
+gen: compose-seed
+	{{python}} src/gen/domain.py --root . --seed src/domains/seed.composed.json
 
 # Parse generated shell and compile generator.
 check-generated:
-	{{python}} -m py_compile src/gen/domain.py
-	find generated src -path './.git' -prune -o -name '*.sh' -print | xargs -r sh -n
+	{{python}} -m py_compile src/gen/domain.py src/gen/compose_seed.py
+	find generated src -path './.git' -prune -o \( -name '*.sh' -o -name 'zshenv' -o -name 'zshrc' -o -name 'bash_profile' -o -name 'bashrc' \) -print | xargs -r sh -n
+	bash -n generated/init/noninteractive-shell/files/bash_profile generated/init/noninteractive-shell/files/bashrc
 
 # Validate that generated artifacts match the seed.
-regen-check:
-	{{python}} src/gen/domain.py --root . --seed src/domains/seed.json
-	git diff --exit-code -- generated
+regen-check: compose-seed
+	{{python}} src/gen/domain.py --root . --seed src/domains/seed.composed.json
+	git diff --exit-code -- generated src/domains/seed.composed.json
 
 # Dry-run install in declared domain order.
-dry-run:
+dry-run: compose-seed
 	for d in {{domains}}; do DOMAIN_DRY_RUN=1 sh "$$d/install.sh"; done
 
 # Run read-only checks. Some may report degraded until installed.
-doctor:
+doctor: compose-seed
 	for d in {{domains}}; do sh "$$d/check.sh" || true; done

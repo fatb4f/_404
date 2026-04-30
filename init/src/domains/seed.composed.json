@@ -432,6 +432,57 @@
         }
       ],
       "output_dir": "generated/postinit/codex"
+    },
+    {
+      "id": "go",
+      "namespace": "GO",
+      "stage": "40-tools",
+      "ring": "workflow",
+      "provider": "host_pkg",
+      "output_dir": "generated/tools/go",
+      "bins": [
+        "go"
+      ],
+      "provides": [
+        "domain.generated/tools/go",
+        "tool.go"
+      ],
+      "deps": {
+        "native": {
+          "mode": "pkg_metadata",
+          "packages": {
+            "arch": "go",
+            "debian": "golang-go"
+          },
+          "include": [
+            "depends",
+            "predepends"
+          ],
+          "features": [
+            "recommends",
+            "optional"
+          ]
+        }
+      },
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        }
+      ],
+      "checks": [
+        {
+          "id": "go-available",
+          "command": "command -v go >/dev/null 2>&1",
+          "severity": "fatal"
+        }
+      ]
     }
   ]
 }

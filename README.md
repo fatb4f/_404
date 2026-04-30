@@ -39,6 +39,7 @@ generated/init/noninteractive-shell/
 generated/init/interactive-shell/
 generated/init/term/kitty/
 generated/postinit/codex/
+generated/tools/go/
 ```
 
 Each generated domain contains:
@@ -53,24 +54,42 @@ domain.env.sh
 install.sh
 ```
 
+The noninteractive shell domain owns the shared loader and bash startup wrappers.
+The interactive shell domain owns the zsh startup wrappers.
+
+```txt
+files/env-loader.sh
+files/bash_profile
+files/bashrc
+```
+
+```txt
+files/zshenv
+files/zshrc
+```
+
 Generated scripts discover the repository root by walking upward until `src/lib/fs.sh` and `src/lib/domain.sh` are found. This avoids assuming a fixed depth such as `<domain>/..`.
 
 ## Authored inputs
 
 ```txt
-domains/seed.json             zero-dependency bootstrap seed
-domains/seed.cue              CUE authority seed mirror
+src/domains/seed.json         zero-dependency bootstrap seed
+src/domains/seed.cue          CUE authority seed mirror
+src/domains/seed.composed.json composed seed output
+domains.d/*                   human-authored fragment profiles
 src/schema/domain-seed.cue    seed contract
 src/schema/domain.cue         materialized domain contract
 src/templates/domain/*        projection templates
 src/gen/domain.py             seed renderer
+src/gen/compose_seed.py       fragment composer
 src/lib/*                     shared runtime adapters
 ```
 
 ## Generate
 
 ```sh
-python3 src/gen/domain.py --root . --seed domains/seed.json
+python3 src/gen/compose_seed.py --root . --seed src/domains/seed.json --fragments domains.d --out src/domains/seed.composed.json
+python3 src/gen/domain.py --root . --seed src/domains/seed.composed.json
 ```
 
 ## Validate
