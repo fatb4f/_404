@@ -29,6 +29,11 @@ domain_install_files() {
   read_specs "${DOMAIN_FILES:-}" | while IFS='|' read -r src_t dst_t mode; do
     src="$DOMAIN_DIR/$src_t"
     dst=$(expand_path_template "$dst_t")
+    case "$dst" in
+      "$DOMAIN_PREFIX"/*|"${DOMAIN_PREFIX}")
+        continue
+        ;;
+    esac
     printf 'activate %-22s %s -> %s\n' "$DOMAIN_STAGE" "${src#$ROOT/}" "$dst"
     [ "${DOMAIN_DRY_RUN:-0}" -eq 1 ] && continue
     atomic_copy_file "$src" "$dst" "$mode"
@@ -63,7 +68,7 @@ domain_install_from_generated() {
   domain_load_env "$DOMAIN_DIR"
 
   if [ "${DOMAIN_DRY_RUN:-0}" -ne 1 ]; then
-    mkdir -p "$DOMAIN_STATE" "$DOMAIN_CACHE" "$DOMAIN_PREFIX" "$DOMAIN_BIN_HOME" "$DOMAIN_SHARE_HOME" "$TOOL_PATH_HOME" "$TOOL_PREFIX_HOME"
+    mkdir -p "$DOMAIN_STATE" "$DOMAIN_CACHE" "$TOOL_PATH_HOME" "$TOOL_PREFIX_HOME"
   fi
 
   if [ -n "${DOMAIN_REQUIRES_READY:-}" ]; then
@@ -72,7 +77,6 @@ domain_install_from_generated() {
     done
   fi
 
-  domain_install_files
   provider_install_payload
   domain_install_copies
   domain_install_links

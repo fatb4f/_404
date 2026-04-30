@@ -142,8 +142,10 @@ def apply_template_patch(
         domain["cleanup_outputs"] = cleanup_outputs
 
 
-def derive_paths(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, str]:
+def derive_paths(root: Path, roots: dict[str, str], domain: dict[str, Any]) -> dict[str, str]:
     domain_id = domain["id"]
+    domain_output_dir = domain.get("output_dir", f"{DEFAULT_OUTPUT_DIR}/{domain_id}")
+    domain_prefix = str(root / domain_output_dir / "files")
     return {
         "DOTS_REPO": roots.get("dots_repo", "src"),
         "DOTS_DIR": roots.get("dots_dir", "dots"),
@@ -154,11 +156,11 @@ def derive_paths(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, str
         "XDG_STATE_HOME": roots["xdg_state"],
         "XDG_CACHE_HOME": roots["xdg_cache"],
         "TOOL_PATH_HOME": roots["tool_path"],
-        "DOMAIN_PREFIX": f"$XDG_OPT_HOME/{domain_id}",
+        "DOMAIN_PREFIX": domain_prefix,
         "DOMAIN_STATE": f"$XDG_STATE_HOME/_404/{domain_id}",
         "DOMAIN_CACHE": f"$XDG_CACHE_HOME/_404/{domain_id}",
-        "DOMAIN_BIN_HOME": f"$XDG_OPT_HOME/{domain_id}/bin",
-        "DOMAIN_SHARE_HOME": f"$XDG_OPT_HOME/{domain_id}/share",
+        "DOMAIN_BIN_HOME": f"{domain_prefix}/bin",
+        "DOMAIN_SHARE_HOME": f"{domain_prefix}/share",
     }
 
 
@@ -223,19 +225,20 @@ def shell_env_source_lines(domains: list[dict[str, Any]]) -> str:
     lines = []
     for domain in domains:
         domain_id = domain["id"]
+        output_dir = domain.get("output_dir", f"generated/domains/{domain_id}")
         if not any(f.get("source") == "files/env.sh" for f in domain.get("files", [])):
             continue
-        lines.append(f'if [ -r "$XDG_OPT_HOME/{domain_id}/env.sh" ]; then')
-        lines.append(f'  . "$XDG_OPT_HOME/{domain_id}/env.sh"')
+        lines.append(f'if [ -r "$repo_root/init/{output_dir}/files/env.sh" ]; then')
+        lines.append(f'  . "$repo_root/init/{output_dir}/files/env.sh"')
         lines.append('fi')
-    lines.append('if [ -r "$XDG_OPT_HOME/0-noninteractive-shell/path.sh" ]; then')
-    lines.append('  . "$XDG_OPT_HOME/0-noninteractive-shell/path.sh"')
+    lines.append('if [ -r "$repo_root/init/generated/init/noninteractive-shell/files/path.sh" ]; then')
+    lines.append('  . "$repo_root/init/generated/init/noninteractive-shell/files/path.sh"')
     lines.append('fi')
     return "\n".join(lines)
 
 
 def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[dict[str, Any]]) -> dict[str, str]:
-    paths = derive_paths(roots, domain)
+    paths = derive_paths(root, roots, domain)
     pv = provider_values(domain)
     files_rows = [[f["source"], f["target"], f.get("mode", "0644")] for f in domain.get("files", [])]
     copy_rows = [[c["src"], c["dst"], c.get("mode", "0644")] for c in domain.get("copies", [])]

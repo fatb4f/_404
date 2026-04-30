@@ -17,6 +17,7 @@ case $TOOL_PATH_HOME in
 esac
 : "${INIT_ROOT:=$DOTS_HOME/.config/init}"
 : "${INIT_LOADER:=$INIT_ROOT/loader.sh}"
+repo_root=$(dirname "$DOTS_HOME")
 
 [ -r "$INIT_LOADER" ] && . "$INIT_LOADER"
 
