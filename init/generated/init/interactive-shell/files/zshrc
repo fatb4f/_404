@@ -1,0 +1,12 @@
+# stage minimal .zshrc
+# Interactive scope only. Keep this domain isolated.
+
+case $- in
+  *i*) ;;
+  *) return 0 2>/dev/null || exit 0 ;;
+esac
+
+local_zsh="${XDG_CONFIG_HOME}/zsh/local.zsh"
+[ -r "$local_zsh" ] && . "$local_zsh"
+
+PROMPT='%n@%m:%~%# '

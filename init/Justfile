@@ -1,0 +1,26 @@
+set shell := ["sh", "-eu", "-c"]
+
+python := "python3"
+domains := "generated/init/noninteractive-shell generated/init/interactive-shell generated/init/term/kitty generated/postinit/codex"
+
+# Regenerate domain artifacts from the bootstrap seed.
+gen:
+	{{python}} src/gen/domain.py --root . --seed src/domains/seed.json
+
+# Parse generated shell and compile generator.
+check-generated:
+	{{python}} -m py_compile src/gen/domain.py
+	find generated src -path './.git' -prune -o -name '*.sh' -print | xargs -r sh -n
+
+# Validate that generated artifacts match the seed.
+regen-check:
+	{{python}} src/gen/domain.py --root . --seed src/domains/seed.json
+	git diff --exit-code -- generated
+
+# Dry-run install in declared domain order.
+dry-run:
+	for d in {{domains}}; do DOMAIN_DRY_RUN=1 sh "$$d/install.sh"; done
+
+# Run read-only checks. Some may report degraded until installed.
+doctor:
+	for d in {{domains}}; do sh "$$d/check.sh" || true; done

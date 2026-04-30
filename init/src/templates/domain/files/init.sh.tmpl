@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# generated: ${DOMAIN_ID} init
+# shellcheck shell=sh
+
+: "${DOTS_REPO:=${DOTS_REPO}}"
+: "${DOTS_DIR:=${DOTS_DIR}}"
+: "${DOTS_HOME:=${DOTS_HOME}}"
+: "${XDG_STATE_HOME:=${XDG_STATE_HOME}}"
+: "${TOOL_PATH_HOME:=${TOOL_PATH_HOME}}"
+: "${${DOMAIN_NS}_PREFIX:=${DOMAIN_PREFIX}}"
+
+ready_marker="$XDG_STATE_HOME/_404/bootstrap/${DOMAIN_STAGE}.ready"
+[ -f "$ready_marker" ] || return 0 2>/dev/null || exit 0
+
+${INIT_SOURCE_LINES}
+
+if [ -d "$TOOL_PATH_HOME" ]; then
+  case ":$PATH:" in
+    *":$TOOL_PATH_HOME:"*) ;;
+    *) PATH="$TOOL_PATH_HOME:$PATH"; export PATH ;;
+  esac
+fi

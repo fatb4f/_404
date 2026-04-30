@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# generated: generated/init/interactive-shell env
+# shellcheck shell=sh
+
+: "${DOTS_REPO:=src}"
+: "${DOTS_DIR:=dots}"
+: "${DOTS_HOME:=$HOME/$DOTS_REPO/$DOTS_DIR}"
+: "${XDG_CONFIG_HOME:=$DOTS_HOME/.config}"
+: "${XDG_DATA_HOME:=$DOTS_HOME/.local/share}"
+: "${XDG_OPT_HOME:=$DOTS_HOME/.local/opt}"
+: "${XDG_STATE_HOME:=$HOME/.local/state}"
+: "${XDG_CACHE_HOME:=$HOME/.cache}"
+: "${TOOL_PATH_HOME:=$HOME/.local/bin}"
+
+export DOTS_REPO DOTS_DIR DOTS_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_OPT_HOME XDG_STATE_HOME XDG_CACHE_HOME TOOL_PATH_HOME
+
+: "${INTERACTIVE_SHELL_PREFIX:=$XDG_OPT_HOME/0-interactive-shell}"
+: "${INTERACTIVE_SHELL_STATE:=$XDG_STATE_HOME/_404/0-interactive-shell}"
+: "${INTERACTIVE_SHELL_CACHE:=$XDG_CACHE_HOME/_404/0-interactive-shell}"
+: "${INTERACTIVE_SHELL_BIN_HOME:=$XDG_OPT_HOME/0-interactive-shell/bin}"
+: "${INTERACTIVE_SHELL_SHARE_HOME:=$XDG_OPT_HOME/0-interactive-shell/share}"
+
+export INTERACTIVE_SHELL_PREFIX INTERACTIVE_SHELL_STATE INTERACTIVE_SHELL_CACHE INTERACTIVE_SHELL_BIN_HOME INTERACTIVE_SHELL_SHARE_HOME
+
+

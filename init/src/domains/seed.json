@@ -1,0 +1,402 @@
+{
+  "roots": {
+    "dots_repo": "src",
+    "dots_dir": "dots",
+    "dots": "$HOME/$DOTS_REPO/$DOTS_DIR",
+    "xdg_config": "$DOTS_HOME/.config",
+    "xdg_data": "$DOTS_HOME/.local/share",
+    "xdg_opt": "$DOTS_HOME/.local/opt",
+    "xdg_state": "$HOME/.local/state",
+    "xdg_cache": "$HOME/.cache",
+    "tool_path": "$HOME/.local/bin"
+  },
+  "domains": [
+    {
+      "id": "0-noninteractive-shell",
+      "namespace": "NONINTERACTIVE_SHELL",
+      "stage": "00-shell",
+      "ring": "substrate",
+      "provider": "domain_local",
+      "bins": [],
+      "requires": [
+        "tool.sh"
+      ],
+      "provides": [
+        "domain.generated/init/noninteractive-shell",
+        "shell.noninteractive",
+        "shell.bootstrap.ready"
+      ],
+      "extra_env": {
+        "BOOTSTRAP_STATE": "$XDG_STATE_HOME/_404/bootstrap",
+        "STAGE_ROOT": "$NONINTERACTIVE_SHELL_PREFIX"
+      },
+      "init_sources": [
+        "require.sh",
+        "env.sh",
+        "path.sh"
+      ],
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/path.sh",
+          "target": "$DOMAIN_PREFIX/path.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/require.sh",
+          "target": "$DOMAIN_PREFIX/require.sh",
+          "mode": "0644"
+        }
+      ],
+      "checks": [
+        {
+          "id": "stage-ready",
+          "command": "test -f $XDG_STATE_HOME/_404/bootstrap/00-shell.ready",
+          "severity": "fatal"
+        },
+        {
+          "id": "files-present",
+          "command": "test -f $DOMAIN_PREFIX/init.sh && test -f $DOMAIN_PREFIX/env.sh && test -f $DOMAIN_PREFIX/path.sh && test -f $DOMAIN_PREFIX/require.sh",
+          "severity": "fatal"
+        },
+        {
+          "id": "shell-parse",
+          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/path.sh $DOMAIN_PREFIX/require.sh",
+          "severity": "fatal"
+        }
+      ],
+      "output_dir": "generated/init/noninteractive-shell"
+    },
+    {
+      "id": "0-interactive-shell",
+      "namespace": "INTERACTIVE_SHELL",
+      "stage": "interactive-shell",
+      "ring": "substrate",
+      "provider": "domain_local",
+      "bins": [],
+      "requires": [
+        "tool.zsh",
+        "shell.bootstrap.ready"
+      ],
+      "provides": [
+        "domain.generated/init/interactive-shell",
+        "shell.interactive.ready"
+      ],
+      "init_sources": [
+        "env.sh"
+      ],
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/zshenv",
+          "target": "$HOME/.zshenv",
+          "mode": "0644"
+        },
+        {
+          "source": "files/zshrc",
+          "target": "$HOME/.zshrc",
+          "mode": "0644"
+        }
+      ],
+      "checks": [
+        {
+          "id": "zsh-available",
+          "command": "command -v zsh >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "zshenv-parse",
+          "command": "test -f $HOME/.zshenv && zsh -n $HOME/.zshenv",
+          "severity": "fatal"
+        },
+        {
+          "id": "zshrc-parse",
+          "command": "test -f $HOME/.zshrc && zsh -n $HOME/.zshrc",
+          "severity": "fatal"
+        },
+        {
+          "id": "stage-ready",
+          "command": "test -f $XDG_STATE_HOME/_404/bootstrap/interactive-shell.ready",
+          "severity": "degraded"
+        }
+      ],
+      "output_dir": "generated/init/interactive-shell"
+    },
+    {
+      "id": "1-terminal",
+      "namespace": "TERMINAL",
+      "stage": "10-terminal",
+      "ring": "terminal",
+      "provider": "host_pkg",
+      "bins": [
+        "kitty"
+      ],
+      "requires": [
+        "shell.bootstrap.ready",
+        "shell.interactive.ready"
+      ],
+      "provides": [
+        "domain.generated/init/term/kitty",
+        "terminal.kitty",
+        "terminal.ready"
+      ],
+      "extra_env": {
+        "KITTY_CONFIG_DIRECTORY": "$DOMAIN_PREFIX/kitty",
+        "KITTY_CACHE_DIRECTORY": "$XDG_CACHE_HOME/kitty",
+        "TERMINAL_STATE": "$DOMAIN_STATE",
+        "BOOTSTRAP_STATE": "$XDG_STATE_HOME/_404/bootstrap"
+      },
+      "init_sources": [
+        "env.sh",
+        "functions.sh"
+      ],
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/functions.sh",
+          "target": "$DOMAIN_PREFIX/functions.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/kitty.conf",
+          "target": "$DOMAIN_PREFIX/kitty/kitty.conf",
+          "mode": "0644"
+        },
+        {
+          "source": "files/overrides.kitty.conf",
+          "target": "$DOMAIN_PREFIX/kitty/overrides.kitty.conf",
+          "mode": "0644"
+        },
+        {
+          "source": "files/bin/kitty-t0",
+          "target": "$DOMAIN_PREFIX/bin/kitty-t0",
+          "mode": "0755"
+        },
+        {
+          "source": "files/bin/kitty-launch-with-cwd",
+          "target": "$DOMAIN_PREFIX/bin/kitty-launch-with-cwd",
+          "mode": "0755"
+        },
+        {
+          "source": "files/bin/kitty-launch-desktop",
+          "target": "$DOMAIN_PREFIX/bin/kitty-launch-desktop",
+          "mode": "0755"
+        },
+        {
+          "source": "files/applications/stage-kitty.desktop",
+          "target": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
+          "mode": "0644"
+        },
+        {
+          "source": "files/applications/stage-kitty-workflow.desktop",
+          "target": "$DOMAIN_PREFIX/applications/stage-kitty-workflow.desktop",
+          "mode": "0644"
+        }
+      ],
+      "links": [
+        {
+          "source": "$DOMAIN_PREFIX/kitty/kitty.conf",
+          "target": "$XDG_CONFIG_HOME/kitty/kitty.conf"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/kitty/overrides.kitty.conf",
+          "target": "$XDG_CONFIG_HOME/kitty/overrides.kitty.conf"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/bin/kitty-t0",
+          "target": "$TOOL_PATH_HOME/kitty-t0"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/bin/kitty-launch-with-cwd",
+          "target": "$TOOL_PATH_HOME/kitty-launch-with-cwd"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/bin/kitty-launch-desktop",
+          "target": "$TOOL_PATH_HOME/kitty-launch-desktop"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/applications/stage-kitty.desktop",
+          "target": "$XDG_DATA_HOME/applications/stage-kitty.desktop"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/applications/stage-kitty-workflow.desktop",
+          "target": "$XDG_DATA_HOME/applications/stage-kitty-workflow.desktop"
+        }
+      ],
+      "checks": [
+        {
+          "id": "stage-ready",
+          "command": "test -f $XDG_STATE_HOME/_404/bootstrap/10-terminal.ready",
+          "severity": "degraded"
+        },
+        {
+          "id": "files-present",
+          "command": "test -f $DOMAIN_PREFIX/kitty/kitty.conf && test -x $DOMAIN_PREFIX/bin/kitty-t0",
+          "severity": "degraded"
+        },
+        {
+          "id": "shell-parse",
+          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh $DOMAIN_PREFIX/bin/kitty-launch-desktop",
+          "severity": "fatal"
+        },
+        {
+          "id": "kitty-available",
+          "command": "command -v kitty >/dev/null 2>&1",
+          "severity": "warning"
+        }
+      ],
+      "deps": {
+        "native": {
+          "mode": "pkg_metadata",
+          "packages": {
+            "arch": "kitty",
+            "debian": "kitty"
+          },
+          "include": [
+            "depends",
+            "predepends"
+          ],
+          "features": [
+            "recommends",
+            "optional"
+          ]
+        }
+      },
+      "output_dir": "generated/init/term/kitty"
+    },
+    {
+      "id": "2-agent",
+      "namespace": "AGENT",
+      "stage": "20-agent",
+      "ring": "agent",
+      "provider": "npm_global",
+      "bins": [
+        "codex"
+      ],
+      "requires": [
+        "terminal.ready",
+        "tool.node",
+        "tool.npm"
+      ],
+      "provides": [
+        "domain.generated/postinit/codex",
+        "agent.codex",
+        "agent.shell-tool",
+        "agent.shell-snapshot"
+      ],
+      "source": {
+        "npm": {
+          "package": "@openai/codex",
+          "version": "latest"
+        }
+      },
+      "extra_env": {
+        "AGENT_STATE": "$DOMAIN_STATE",
+        "AGENT_LOG": "$DOMAIN_STATE/agent.log",
+        "AGENT_MODE": "noninteractive",
+        "AGENT_BOOTSTRAP_STATE": "$XDG_STATE_HOME/_404/bootstrap",
+        "CODEX_AGENT_PREFIX": "$AGENT_PREFIX",
+        "CODEX_AGENT_STATE": "$DOMAIN_STATE",
+        "CODEX_AGENT_LOG": "$DOMAIN_STATE/agent.log",
+        "CODEX_AGENT_MODE": "noninteractive",
+        "CODEX_BOOTSTRAP_STATE": "$XDG_STATE_HOME/_404/bootstrap"
+      },
+      "init_sources": [
+        "env.sh",
+        "functions.sh"
+      ],
+      "files": [
+        {
+          "source": "files/env.sh",
+          "target": "$DOMAIN_PREFIX/env.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/init.sh",
+          "target": "$DOMAIN_PREFIX/init.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/functions.sh",
+          "target": "$DOMAIN_PREFIX/functions.sh",
+          "mode": "0644"
+        },
+        {
+          "source": "files/bin/shell_tool",
+          "target": "$DOMAIN_PREFIX/bin/shell_tool",
+          "mode": "0755"
+        },
+        {
+          "source": "files/bin/shell_snapshot",
+          "target": "$DOMAIN_PREFIX/bin/shell_snapshot",
+          "mode": "0755"
+        }
+      ],
+      "links": [
+        {
+          "source": "$DOMAIN_PREFIX/bin/shell_tool",
+          "target": "$TOOL_PATH_HOME/shell_tool"
+        },
+        {
+          "source": "$DOMAIN_PREFIX/bin/shell_snapshot",
+          "target": "$TOOL_PATH_HOME/shell_snapshot"
+        }
+      ],
+      "checks": [
+        {
+          "id": "stage-ready",
+          "command": "test -f $XDG_STATE_HOME/_404/bootstrap/20-agent.ready",
+          "severity": "degraded"
+        },
+        {
+          "id": "npm-available",
+          "command": "command -v npm >/dev/null 2>&1",
+          "severity": "fatal"
+        },
+        {
+          "id": "codex-available",
+          "command": "command -v codex >/dev/null 2>&1",
+          "severity": "degraded"
+        },
+        {
+          "id": "files-present",
+          "command": "test -x $DOMAIN_PREFIX/bin/shell_tool && test -x $DOMAIN_PREFIX/bin/shell_snapshot",
+          "severity": "fatal"
+        },
+        {
+          "id": "shell-parse",
+          "command": "sh -n $DOMAIN_PREFIX/init.sh $DOMAIN_PREFIX/env.sh $DOMAIN_PREFIX/functions.sh",
+          "severity": "fatal"
+        }
+      ],
+      "output_dir": "generated/postinit/codex"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+
+: "${DOTS_REPO:=src}"
+: "${DOTS_DIR:=dots}"
+: "${DOTS_HOME:=$HOME/$DOTS_REPO/$DOTS_DIR}"
+: "${XDG_OPT_HOME:=$DOTS_HOME/.local/opt}"
+: "${AGENT_PREFIX:=$XDG_OPT_HOME/2-agent}"
+
+. "$AGENT_PREFIX/init.sh"
+shell_tool "$@"

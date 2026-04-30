@@ -1,0 +1,38 @@
+package domain
+
+import "stage.local/src/schema"
+
+domain: schema.#Domain & {
+	id:        "${DOMAIN_ID}"
+	namespace: "${DOMAIN_NS}"
+	stage:     "${DOMAIN_STAGE}"
+	ring:      "${DOMAIN_RING}"
+	provider:  "${PROVIDER}"
+	outputDir: "${DOMAIN_OUTPUT_DIR}"
+
+	requires: ${REQUIRES_CUE}
+	provides: ${PROVIDES_CUE}
+
+	roots: {
+		dots_repo:  "${DOTS_REPO}"
+		dots_dir:   "${DOTS_DIR}"
+		dots:       "${DOTS_HOME}"
+		xdg_config: "${XDG_CONFIG_HOME}"
+		xdg_data:   "${XDG_DATA_HOME}"
+		xdg_opt:    "${XDG_OPT_HOME}"
+		xdg_state:  "${XDG_STATE_HOME}"
+		xdg_cache:  "${XDG_CACHE_HOME}"
+		tool_path:  "${TOOL_PATH_HOME}"
+	}
+
+	paths: {
+		prefix:    "${DOMAIN_PREFIX}"
+		state:     "${DOMAIN_STATE}"
+		cache:     "${DOMAIN_CACHE}"
+		binHome:   "${DOMAIN_BIN_HOME}"
+		shareHome: "${DOMAIN_SHARE_HOME}"
+	}
+
+	owns: ${OWNS_CUE}
+	checks: ${CHECKS_CUE}
+}
