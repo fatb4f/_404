@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=stage Kitty
-Exec=kitty --start-as maximized /usr/bin/zsh -l
-TryExec=kitty
-Terminal=false
-Categories=System;Utility;
-StartupWMClass=kitty

@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=stage Kitty Workflow
-Exec=kitty-launch-with-cwd
-Terminal=false
-Categories=Development;Utility;
