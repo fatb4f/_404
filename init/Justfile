@@ -15,7 +15,7 @@ gen: compose-seed
 check-generated:
 	{{python}} -m py_compile src/gen/domain.py src/gen/compose_seed.py
 	find generated src -path './.git' -prune -o \( -name '*.sh' -o -name 'zshenv' -o -name 'zshrc' -o -name 'bash_profile' -o -name 'bashrc' -o -name '_404-codex' \) -print | xargs -r sh -n
-	sh -n generated/postinit/codex/files/hooks/session-snapshot generated/postinit/codex/files/hooks/pre-tool-use generated/postinit/codex/files/hooks/post-tool-use generated/postinit/codex/files/bin/_404-codex dots/.config/codex/hooks/session-snapshot dots/.config/codex/hooks/pre-tool-use dots/.config/codex/hooks/post-tool-use dots/.local/bin/_404-codex
+	sh -n generated/postinit/codex/files/hooks/session-init.sh generated/postinit/codex/files/hooks/pre-tool-use.sh generated/postinit/codex/files/hooks/post-tool-use.sh generated/postinit/codex/files/hooks/stop.sh generated/postinit/codex/files/bin/_404-codex dots/.config/codex/hooks/session-init.sh dots/.config/codex/hooks/pre-tool-use.sh dots/.config/codex/hooks/post-tool-use.sh dots/.config/codex/hooks/stop.sh dots/.local/bin/_404-codex
 	bash -n generated/init/noninteractive-shell/files/bash_profile generated/init/noninteractive-shell/files/bashrc
 	{{python}} -c 'import pathlib, tomllib; tomllib.loads(pathlib.Path("generated/postinit/codex/files/config.toml").read_text())'
 

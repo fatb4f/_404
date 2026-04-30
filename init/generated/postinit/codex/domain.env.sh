@@ -37,10 +37,15 @@ export DOMAIN_PREFIX DOMAIN_STATE DOMAIN_CACHE DOMAIN_BIN_HOME DOMAIN_SHARE_HOME
 DOMAIN_REQUIRES_READY='10-terminal'
 
 DOMAIN_FILES='files/config.toml|$XDG_CONFIG_HOME/codex/config.toml|0644
-files/hooks/session-snapshot|$XDG_CONFIG_HOME/codex/hooks/session-snapshot|0755
-files/hooks/pre-tool-use|$XDG_CONFIG_HOME/codex/hooks/pre-tool-use|0755
-files/hooks/post-tool-use|$XDG_CONFIG_HOME/codex/hooks/post-tool-use|0755
-files/rules/README.md|$XDG_CONFIG_HOME/codex/rules/README.md|0644
+files/AGENTS.md|$XDG_CONFIG_HOME/codex/AGENTS.md|0644
+files/hooks/session-init.sh|$XDG_CONFIG_HOME/codex/hooks/session-init.sh|0755
+files/hooks/pre-tool-use.sh|$XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh|0755
+files/hooks/post-tool-use.sh|$XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh|0755
+files/hooks/stop.sh|$XDG_CONFIG_HOME/codex/hooks/stop.sh|0755
+files/roles/projection-maintainer.md|$XDG_CONFIG_HOME/codex/roles/projection-maintainer.md|0644
+files/roles/reviewer.md|$XDG_CONFIG_HOME/codex/roles/reviewer.md|0644
+files/roles/implementer.md|$XDG_CONFIG_HOME/codex/roles/implementer.md|0644
+files/roles/release-checker.md|$XDG_CONFIG_HOME/codex/roles/release-checker.md|0644
 files/skills/cue/SKILL.md|$XDG_CONFIG_HOME/codex/skills/cue/SKILL.md|0644
 files/bin/_404-codex|$DOMAIN_PREFIX/bin/_404-codex|0755'
 DOMAIN_LINKS='$DOMAIN_PREFIX/bin/_404-codex|$TOOL_PATH_HOME/_404-codex'
@@ -48,7 +53,10 @@ DOMAIN_CHECKS='stage-ready|test -f $XDG_STATE_HOME/_404/bootstrap/20-agent.ready
 npm-available|command -v npm >/dev/null 2>&1|fatal
 codex-available|command -v codex >/dev/null 2>&1|degraded
 config-present|test -f $XDG_CONFIG_HOME/codex/config.toml|fatal
-hooks-present|test -x $XDG_CONFIG_HOME/codex/hooks/session-snapshot && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use|fatal
+agents-present|test -f $XDG_CONFIG_HOME/codex/AGENTS.md|fatal
+roles-present|test -f $XDG_CONFIG_HOME/codex/roles/projection-maintainer.md && test -f $XDG_CONFIG_HOME/codex/roles/reviewer.md && test -f $XDG_CONFIG_HOME/codex/roles/implementer.md && test -f $XDG_CONFIG_HOME/codex/roles/release-checker.md|fatal
+skill-present|test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md|fatal
 launcher-present|test -x $DOMAIN_PREFIX/bin/_404-codex|fatal
-toml-parse|python3 -c 'import os,pathlib,tomllib; tomllib.loads(pathlib.Path(os.environ["XDG_CONFIG_HOME"] + "/codex/config.toml").read_text())'|fatal
-hook-shell-parse|sh -n $XDG_CONFIG_HOME/codex/hooks/session-snapshot $XDG_CONFIG_HOME/codex/hooks/pre-tool-use $XDG_CONFIG_HOME/codex/hooks/post-tool-use $DOMAIN_PREFIX/bin/_404-codex|fatal'
+toml-parse|python3 -c '"'"'import os,pathlib,tomllib; tomllib.loads(pathlib.Path(os.environ["XDG_CONFIG_HOME"] + "/codex/config.toml").read_text())'"'"'|fatal
+hooks-present|test -x $XDG_CONFIG_HOME/codex/hooks/session-init.sh && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh && test -x $XDG_CONFIG_HOME/codex/hooks/stop.sh|fatal
+hook-shell-parse|sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/_404-codex|fatal'

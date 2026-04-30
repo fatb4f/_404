@@ -52,33 +52,73 @@ domain: schema.#Domain & {
 		"role": "projected"
 	},
 	{
-		"id": "session-snapshot",
-		"source": "files/hooks/session-snapshot",
-		"target": "$XDG_CONFIG_HOME/codex/hooks/session-snapshot",
+		"id": "AGENTS.md",
+		"source": "files/AGENTS.md",
+		"target": "$XDG_CONFIG_HOME/codex/AGENTS.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "session-init.sh",
+		"source": "files/hooks/session-init.sh",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/session-init.sh",
 		"mode": "0755",
 		"activation": "atomic-copy",
 		"role": "projected"
 	},
 	{
-		"id": "pre-tool-use",
-		"source": "files/hooks/pre-tool-use",
-		"target": "$XDG_CONFIG_HOME/codex/hooks/pre-tool-use",
+		"id": "pre-tool-use.sh",
+		"source": "files/hooks/pre-tool-use.sh",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh",
 		"mode": "0755",
 		"activation": "atomic-copy",
 		"role": "projected"
 	},
 	{
-		"id": "post-tool-use",
-		"source": "files/hooks/post-tool-use",
-		"target": "$XDG_CONFIG_HOME/codex/hooks/post-tool-use",
+		"id": "post-tool-use.sh",
+		"source": "files/hooks/post-tool-use.sh",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh",
 		"mode": "0755",
 		"activation": "atomic-copy",
 		"role": "projected"
 	},
 	{
-		"id": "README.md",
-		"source": "files/rules/README.md",
-		"target": "$XDG_CONFIG_HOME/codex/rules/README.md",
+		"id": "stop.sh",
+		"source": "files/hooks/stop.sh",
+		"target": "$XDG_CONFIG_HOME/codex/hooks/stop.sh",
+		"mode": "0755",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "projection-maintainer.md",
+		"source": "files/roles/projection-maintainer.md",
+		"target": "$XDG_CONFIG_HOME/codex/roles/projection-maintainer.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "reviewer.md",
+		"source": "files/roles/reviewer.md",
+		"target": "$XDG_CONFIG_HOME/codex/roles/reviewer.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "implementer.md",
+		"source": "files/roles/implementer.md",
+		"target": "$XDG_CONFIG_HOME/codex/roles/implementer.md",
+		"mode": "0644",
+		"activation": "atomic-copy",
+		"role": "projected"
+	},
+	{
+		"id": "release-checker.md",
+		"source": "files/roles/release-checker.md",
+		"target": "$XDG_CONFIG_HOME/codex/roles/release-checker.md",
 		"mode": "0644",
 		"activation": "atomic-copy",
 		"role": "projected"
@@ -129,8 +169,18 @@ domain: schema.#Domain & {
 		"severity": "fatal"
 	},
 	{
-		"id": "hooks-present",
-		"command": "test -x $XDG_CONFIG_HOME/codex/hooks/session-snapshot && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use",
+		"id": "agents-present",
+		"command": "test -f $XDG_CONFIG_HOME/codex/AGENTS.md",
+		"severity": "fatal"
+	},
+	{
+		"id": "roles-present",
+		"command": "test -f $XDG_CONFIG_HOME/codex/roles/projection-maintainer.md && test -f $XDG_CONFIG_HOME/codex/roles/reviewer.md && test -f $XDG_CONFIG_HOME/codex/roles/implementer.md && test -f $XDG_CONFIG_HOME/codex/roles/release-checker.md",
+		"severity": "fatal"
+	},
+	{
+		"id": "skill-present",
+		"command": "test -f $XDG_CONFIG_HOME/codex/skills/cue/SKILL.md",
 		"severity": "fatal"
 	},
 	{
@@ -144,8 +194,13 @@ domain: schema.#Domain & {
 		"severity": "fatal"
 	},
 	{
+		"id": "hooks-present",
+		"command": "test -x $XDG_CONFIG_HOME/codex/hooks/session-init.sh && test -x $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh && test -x $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh && test -x $XDG_CONFIG_HOME/codex/hooks/stop.sh",
+		"severity": "fatal"
+	},
+	{
 		"id": "hook-shell-parse",
-		"command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-snapshot $XDG_CONFIG_HOME/codex/hooks/pre-tool-use $XDG_CONFIG_HOME/codex/hooks/post-tool-use $DOMAIN_PREFIX/bin/_404-codex",
+		"command": "sh -n $XDG_CONFIG_HOME/codex/hooks/session-init.sh $XDG_CONFIG_HOME/codex/hooks/pre-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/post-tool-use.sh $XDG_CONFIG_HOME/codex/hooks/stop.sh $DOMAIN_PREFIX/bin/_404-codex",
 		"severity": "fatal"
 	}
 ]

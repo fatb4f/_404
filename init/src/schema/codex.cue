@@ -31,6 +31,13 @@ package schema
     ignore_default_excludes?: bool | *false
 }
 
+#CodexFrameName: "session-frame" | "context-frame" | "repo-frame"
+#CodexRoleName:
+    "projection-maintainer" |
+    "reviewer" |
+    "implementer" |
+    "release-checker"
+
 #CodexFeatureSet: {
     codex_hooks: *true | bool
     shell_tool: *true | bool
@@ -81,6 +88,8 @@ package schema
     hooksTarget:  *"$XDG_CONFIG_HOME/codex/hooks" | string
     rulesTarget:  *"$XDG_CONFIG_HOME/codex/rules" | string
     skillsTarget: *"$XDG_CONFIG_HOME/codex/skills" | string
+    frames?: [...#CodexFrameName]
+    roles?: [...#CodexRoleName]
 
     profile: #CodexProfileName
     features: #CodexFeatureSet

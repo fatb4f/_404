@@ -41,6 +41,7 @@ package schema
 	ring:      #Ring
 	provider:  #Provider
 	output_dir?: string
+	template_override?: string
 	bins: [...string]
 	requires?: [...string]
 	provides?: [...string]

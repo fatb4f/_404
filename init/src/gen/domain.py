@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import shutil
 from pathlib import Path
@@ -27,23 +28,9 @@ INTERACTIVE_SHELL_FILES = {
     "src/templates/domain/files/zshrc.tmpl": "files/zshrc",
 }
 
-CODEX_PROFILE_FILES = {
-    "src/templates/codex/files/config.toml.tmpl": "files/config.toml",
-    "src/templates/codex/files/hooks/session-snapshot.tmpl": "files/hooks/session-snapshot",
-    "src/templates/codex/files/hooks/pre-tool-use.tmpl": "files/hooks/pre-tool-use",
-    "src/templates/codex/files/hooks/post-tool-use.tmpl": "files/hooks/post-tool-use",
-    "src/templates/codex/files/bin/_404-codex.tmpl": "files/bin/_404-codex",
-    "src/templates/codex/files/rules/README.md.tmpl": "files/rules/README.md",
-    "src/templates/codex/files/skills/cue/SKILL.md.tmpl": "files/skills/cue/SKILL.md",
-}
-
 EXECUTABLE_OUTPUTS = {
     "install.sh",
     "check.sh",
-    "files/hooks/session-snapshot",
-    "files/hooks/pre-tool-use",
-    "files/hooks/post-tool-use",
-    "files/bin/_404-codex",
 }
 DEFAULT_OUTPUT_DIR = "generated/domains"
 
@@ -61,7 +48,87 @@ def cue_records(records: list[dict[str, Any]]) -> str:
 
 
 def spec_lines(rows: list[list[str]]) -> str:
-    return "\n".join("|".join(row) for row in rows)
+    def escape(value: str) -> str:
+        return value.replace("'", "'\"'\"'")
+
+    return "\n".join("|".join(escape(col) for col in row) for row in rows)
+
+
+def load_template_override(root: Path, domain: dict[str, Any]) -> dict[str, Any]:
+    template_override = domain.get("template_override")
+    if not template_override:
+        return {}
+
+    override = root / "src" / "templates" / template_override / "override.py"
+    if not override.exists():
+        return {}
+
+    spec = importlib.util.spec_from_file_location(
+        f"template_override_{template_override}",
+        override,
+    )
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"{override}: unable to load override")
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    project = getattr(module, "project", None)
+    if project is None:
+        project = getattr(module, "normalize", None)
+    if project is None:
+        return {}
+
+    result = project(dict(domain))
+    if not isinstance(result, dict):
+        raise SystemExit(f"{override}: project()/normalize() must return a dict")
+    return result
+
+
+def apply_template_patch(
+    domain: dict[str, Any],
+    generated_files: dict[str, str],
+    patch: dict[str, Any],
+) -> None:
+    def dedupe_by_key(items: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
+        seen = set()
+        out = []
+        for item in items:
+            value = item.get(key)
+            if value in seen:
+                continue
+            seen.add(value)
+            out.append(item)
+        return out
+
+    for rel in patch.get("generated_files_remove") or []:
+        generated_files.pop(rel, None)
+    for rel, out_rel in (patch.get("generated_files_add") or {}).items():
+        generated_files[rel] = out_rel
+
+    file_specs = list(domain.get("files") or [])
+    remove_sources = set(patch.get("files_remove") or [])
+    if remove_sources:
+        file_specs = [item for item in file_specs if item.get("source") not in remove_sources]
+    file_specs.extend(patch.get("files_add") or [])
+    domain["files"] = dedupe_by_key(file_specs, "source")
+
+    check_specs = list(domain.get("checks") or [])
+    remove_checks = set(patch.get("checks_remove") or [])
+    if remove_checks:
+        check_specs = [item for item in check_specs if item.get("id") not in remove_checks]
+    check_specs.extend(patch.get("checks_add") or [])
+    domain["checks"] = dedupe_by_key(check_specs, "id")
+
+    template_values = dict(domain.get("template_values") or {})
+    template_values.update(patch.get("template_values") or {})
+    if template_values:
+        domain["template_values"] = template_values
+
+    cleanup_outputs = list(domain.get("cleanup_outputs") or [])
+    cleanup_outputs.extend(patch.get("cleanup_outputs") or [])
+    if cleanup_outputs:
+        domain["cleanup_outputs"] = cleanup_outputs
 
 
 def derive_paths(roots: dict[str, str], domain: dict[str, Any]) -> dict[str, str]:
@@ -180,16 +247,9 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         for c in domain.get("checks", [])
     ]
 
-    codex_profile = domain.get("codex_profile") or {}
-
     return {
         **paths,
         **pv,
-        "CODEX_PROFILE": codex_profile.get("profile", "slim"),
-        "CODEX_CONFIG_TARGET": codex_profile.get("config_target", "$XDG_CONFIG_HOME/codex/config.toml"),
-        "CODEX_HOOKS_TARGET": codex_profile.get("hooks_target", "$XDG_CONFIG_HOME/codex/hooks"),
-        "CODEX_RULES_TARGET": codex_profile.get("rules_target", "$XDG_CONFIG_HOME/codex/rules"),
-        "CODEX_SKILLS_TARGET": codex_profile.get("skills_target", "$XDG_CONFIG_HOME/codex/skills"),
         "DOMAIN_ID": domain["id"],
         "DOMAIN_NS": domain["namespace"],
         "DOMAIN_STAGE": domain["stage"],
@@ -207,6 +267,7 @@ def render_values(roots: dict[str, str], domain: dict[str, Any], domains: list[d
         "INIT_SOURCE_LINES": init_source_lines(domain),
         "SHELL_ENV_SOURCE_LINES": shell_env_source_lines(domains),
         "EXTRA_ENV_EXPORTS": extra_env_exports(domain),
+        **(domain.get("template_values") or {}),
     }
 
 
@@ -232,31 +293,41 @@ def main() -> None:
     domains = seed["domains"]
 
     for domain in domains:
-        values = render_values(roots, domain, domains)
-        domain_dir = root / values["DOMAIN_OUTPUT_DIR"]
-        if domain.get("codex_profile") and domain_dir.exists():
-            shutil.rmtree(domain_dir)
-        (domain_dir / "files").mkdir(parents=True, exist_ok=True)
-
+        domain = dict(domain)
         generated_files = dict(BASE_GENERATED_FILES)
-        if domain.get("codex_profile"):
-            generated_files.pop("src/templates/domain/files/env.sh.tmpl", None)
-            generated_files.pop("src/templates/domain/files/init.sh.tmpl", None)
         if domain.get("stage") == "00-shell":
             generated_files.update(NONINTERACTIVE_SHELL_FILES)
         if domain.get("stage") == "interactive-shell":
             generated_files.update(INTERACTIVE_SHELL_FILES)
-        if domain.get("codex_profile"):
-            generated_files.update(CODEX_PROFILE_FILES)
 
+        patch = load_template_override(root, domain)
+        if patch:
+            apply_template_patch(domain, generated_files, patch)
+
+        values = render_values(roots, domain, domains)
+        domain_dir = root / values["DOMAIN_OUTPUT_DIR"]
+        domain_dir.mkdir(parents=True, exist_ok=True)
+        (domain_dir / "files").mkdir(parents=True, exist_ok=True)
+
+        for rel in domain.get("cleanup_outputs") or []:
+            target = domain_dir / rel
+            if target.is_dir() and not target.is_symlink():
+                shutil.rmtree(target, ignore_errors=True)
+            elif target.exists() or target.is_symlink():
+                target.unlink()
+
+        file_modes = {f["source"]: f.get("mode", "0644") for f in domain.get("files", [])}
         for tmpl_rel, out_rel in generated_files.items():
             tmpl = root / tmpl_rel
             out = domain_dir / out_rel
             out.parent.mkdir(parents=True, exist_ok=True)
             rendered = render_template(tmpl.read_text(), values)
             out.write_text(rendered)
+            mode = file_modes.get(out_rel)
             if out_rel in EXECUTABLE_OUTPUTS:
                 out.chmod(0o755)
+            elif mode:
+                out.chmod(int(mode, 8))
             elif out.suffix == ".sh":
                 out.chmod(0o644)
 

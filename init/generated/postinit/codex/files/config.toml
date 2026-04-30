@@ -49,16 +49,16 @@ matcher = "startup|resume|clear"
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/session-snapshot\"'"
+command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/session-init.sh\"'"
 timeout = 10
-statusMessage = "Capturing Codex session snapshot"
+statusMessage = "Capturing Codex session frame"
 
 [[hooks.PreToolUse]]
 matcher = "^Bash$"
 
 [[hooks.PreToolUse.hooks]]
 type = "command"
-command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/pre-tool-use\"'"
+command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/pre-tool-use.sh\"'"
 timeout = 10
 statusMessage = "Checking Bash command"
 
@@ -67,6 +67,14 @@ matcher = "^Bash$"
 
 [[hooks.PostToolUse.hooks]]
 type = "command"
-command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/post-tool-use\"'"
+command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/post-tool-use.sh\"'"
 timeout = 10
 statusMessage = "Recording Bash result"
+
+[[hooks.Stop]]
+
+[[hooks.Stop.hooks]]
+type = "command"
+command = "sh -c 'exec \"${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}/hooks/stop.sh\"'"
+timeout = 10
+statusMessage = "Refreshing Codex context frame"
